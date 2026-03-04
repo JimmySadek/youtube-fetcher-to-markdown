@@ -3,7 +3,7 @@
 Obsidian-ready YouTube archival notes with full metadata — a Claude Code skill that turns any YouTube video into a structured Markdown knowledge note.
 
 ```bash
-npx skills add GimySadek/youtube-fetcher-to-markdown
+npx skills add JimmySadek/youtube-fetcher-to-markdown
 ```
 
 Most transcript tools dump raw text. This one captures the **complete context**: title, channel, description, chapters, duration, upload date, captions — organized as a proper knowledge base entry with YAML frontmatter you can query with [Dataview](https://github.com/blacksmithgu/obsidian-dataview).
@@ -109,7 +109,7 @@ Structured Markdown with YAML frontmatter
 ### Quick Install (Recommended)
 
 ```bash
-npx skills add GimySadek/youtube-fetcher-to-markdown
+npx skills add JimmySadek/youtube-fetcher-to-markdown
 ```
 
 Then install the Python dependencies:
@@ -122,7 +122,7 @@ brew install yt-dlp  # macOS — or: pip install yt-dlp
 ### Manual Install
 
 ```bash
-git clone https://github.com/GimySadek/youtube-fetcher-to-markdown.git ~/.claude/skills/youtube-fetcher
+git clone https://github.com/JimmySadek/youtube-fetcher-to-markdown.git ~/.claude/skills/youtube-fetcher
 pip install youtube-transcript-api requests
 brew install yt-dlp  # macOS — or: pip install yt-dlp
 ```
