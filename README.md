@@ -2,6 +2,10 @@
 
 Obsidian-ready YouTube archival notes with full metadata — a Claude Code skill that turns any YouTube video into a structured Markdown knowledge note.
 
+```bash
+npx skills add GimySadek/youtube-fetcher-to-markdown
+```
+
 Most transcript tools dump raw text. This one captures the **complete context**: title, channel, description, chapters, duration, upload date, captions — organized as a proper knowledge base entry with YAML frontmatter you can query with [Dataview](https://github.com/blacksmithgu/obsidian-dataview).
 
 ## Why This Exists
@@ -102,33 +106,30 @@ Structured Markdown with YAML frontmatter
 
 ## Installation
 
-### As a Claude Code Skill
+### Quick Install (Recommended)
 
 ```bash
-# Clone into your skills directory
-git clone https://github.com/GimySadek/youtube-fetcher-to-markdown.git ~/.claude/skills/youtube-fetcher
-
-# Install Python dependencies
-pip install youtube-transcript-api requests
-
-# Install yt-dlp (recommended, for video description + chapters)
-brew install yt-dlp  # macOS
-# or: pip install yt-dlp
+npx skills add GimySadek/youtube-fetcher-to-markdown
 ```
 
-### As a Skillshare Skill
-
-If you use [skillshare](https://github.com/runkids/skillshare) for cross-tool skill management:
+Then install the Python dependencies:
 
 ```bash
-# Clone into your skillshare skills directory
-git clone https://github.com/GimySadek/youtube-fetcher-to-markdown.git ~/.config/skillshare/skills/youtube-fetcher
+pip install youtube-transcript-api requests
+brew install yt-dlp  # macOS — or: pip install yt-dlp
+```
 
-# Sync to your AI tools
-skillshare sync
+### Manual Install
+
+```bash
+git clone https://github.com/GimySadek/youtube-fetcher-to-markdown.git ~/.claude/skills/youtube-fetcher
+pip install youtube-transcript-api requests
+brew install yt-dlp  # macOS — or: pip install yt-dlp
 ```
 
 ### Verify Installation
+
+The skill checks dependencies automatically on first run. You can also verify manually:
 
 ```bash
 python3 ~/.claude/skills/youtube-fetcher/scripts/fetch_transcript.py --check-deps
