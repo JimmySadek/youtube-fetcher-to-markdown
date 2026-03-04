@@ -1,5 +1,9 @@
 # YouTube Fetcher to Markdown
 
+<p align="center">
+  <img src="assets/banner.png" alt="YouTube Fetcher to Markdown - Claude Code Skill" width="100%">
+</p>
+
 Obsidian-ready YouTube archival notes with full metadata — a Claude Code skill that turns any YouTube video into a structured Markdown knowledge note.
 
 ```bash
