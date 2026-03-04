@@ -1,6 +1,13 @@
 ---
 name: youtube-fetcher
-description: Fetch transcripts from YouTube videos and save as structured Markdown files to ~/yt_transcripts/. Activates when the user wants to get captions, subtitles, or transcripts from YouTube videos for note-taking, summarization, or analysis.
+description: >-
+  Fetch transcripts from YouTube videos and save as structured Markdown files
+  to ~/yt_transcripts/. Use this skill whenever the user shares a YouTube URL
+  or video ID and wants the transcript, captions, or subtitles extracted. Also
+  triggers when the user wants to take notes on a YouTube video, summarize video
+  content, analyze what was said in a video, or reference YouTube content in their
+  notes — even if they don't explicitly say "transcript." If the user pastes a
+  YouTube link with no other context, default to fetching the transcript.
 ---
 
 # YouTube Fetcher
@@ -11,21 +18,44 @@ Fetches transcripts from YouTube videos and saves them as structured Markdown fi
 - **yt-dlp** — video metadata (title, channel, description, duration, chapters)
 - **youtube-transcript-api** — transcript/captions extraction
 
-Each file includes full video metadata, the video description (with links and chapters), and the transcript. Files are saved to `~/yt_transcripts/` with the naming convention `YYYY-MM-DD_video-title-slug.md`.
+Each file includes full video metadata, the video description (with links and chapters), and the transcript. Files are saved to `~/yt_transcripts/` with the naming convention `YYYY-MM-DD_video-title-slug_[VIDEO_ID].md`.
 
 ## When to Use This Skill
 
-- User shares a YouTube URL and wants the transcript
-- Keywords: "transcript", "captions", "subtitles", "YouTube", "video text"
-- Note-taking workflows that reference YouTube content
-- Summarization tasks starting from a YouTube video
+- User shares a YouTube URL (any format) or video ID
+- User wants a transcript, captions, subtitles, or "the text" from a video
+- Note-taking or summarization workflows involving YouTube content
+- User pastes a YouTube link — even without explicit instructions, default to fetching
+
+## How Claude Should Use This Skill
+
+The script path is: `~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py`
+
+**Always use `--force` when running from Claude** — the duplicate check uses an interactive prompt that doesn't work in non-interactive contexts. If you need to check for duplicates first, look for matching files in `~/yt_transcripts/` yourself.
+
+**Typical workflow:**
+1. Run the script with `--force` to fetch the transcript
+2. Tell the user where the file was saved
+3. If the user wants a summary or analysis, read the saved file and process it
+
+**Example invocation:**
+```bash
+python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py "https://www.youtube.com/watch?v=VIDEO_ID" --force
+```
+
+**If the user wants the transcript in the conversation** (not just saved to a file), add `--stdout`:
+```bash
+python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py "URL" --force --stdout
+```
+
+**If deps are missing**, the script exits with code 2 and prints install instructions. Run the pip/brew commands it suggests.
 
 ## Prerequisites
 
 The script checks dependencies automatically on each run and will guide you through installation if anything is missing. You can also run a manual check:
 
 ```bash
-python3 .../fetch_transcript.py --check-deps
+python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py --check-deps
 ```
 
 Required:
@@ -43,22 +73,18 @@ brew install yt-dlp  # or: pip install yt-dlp
 ### Default (saves structured Markdown to ~/yt_transcripts/)
 
 ```bash
-python3 /Users/OldJimmy/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py <youtube_url_or_id>
+python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py <youtube_url_or_id>
 ```
 
-This creates a file like `~/yt_transcripts/2026-03-04_video-title-here.md`.
+This creates a file like `~/yt_transcripts/2026-03-04_video-title-here_[dQw4w9WgXcQ].md`.
 
 ### Duplicate Detection
 
-If a video was already transcribed, the script will notify you:
-```
-⚠ This video was already transcribed on 2026-03-04
-  File: ~/yt_transcripts/2026-03-04_video-title.md
+If a video was already transcribed, the script will:
+- **Interactive terminal**: prompt `Re-transcribe anyway? [y/N]:`
+- **Non-interactive** (Claude, pipes, scripts): auto-skip and suggest `--force`
 
-Re-transcribe anyway? [y/N]:
-```
-
-Use `--force` to skip the duplicate check.
+Use `--force` to always re-fetch regardless of duplicates.
 
 ### Options
 
@@ -102,12 +128,12 @@ python3 .../fetch_transcript.py --check-deps
 | 0 | Success |
 | 1 | Runtime error (fetch failed, invalid URL) |
 | 2 | Missing required dependencies |
-| 3 | Duplicate skipped (user declined re-fetch) |
+| 3 | Duplicate skipped (user declined re-fetch or non-interactive) |
 
 ## Output Structure
 
 ### File Location
-`~/yt_transcripts/YYYY-MM-DD_video-title-slugified.md`
+`~/yt_transcripts/YYYY-MM-DD_video-title-slugified_[VIDEO_ID].md`
 
 ### File Content
 

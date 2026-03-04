@@ -98,15 +98,27 @@ def print_dependency_report(missing: list[dict]) -> None:
 
 # ── Duplicate detection ────────────────────────────────────────────────────
 def find_existing_transcript(video_id: str) -> Path | None:
-    """Scan ~/yt_transcripts/ for an existing transcript with this video_id."""
+    """Find an existing transcript for this video_id.
+
+    Fast path: glob for *_[VIDEO_ID].md in the filename (O(1)).
+    Fallback: scan file contents for backwards compatibility with older files.
+    """
     if not TRANSCRIPTS_DIR.exists():
         return None
 
+    # Fast path: video_id encoded in filename
+    # Escape brackets — glob() treats [] as character classes
+    matches = list(TRANSCRIPTS_DIR.glob(f"*_\\[{video_id}\\].md"))
+    if matches:
+        return matches[0]
+
+    # Fallback: scan frontmatter for older files without ID in filename
     for md_file in TRANSCRIPTS_DIR.glob("*.md"):
         try:
-            content = md_file.read_text(encoding="utf-8", errors="ignore")
-            # Check YAML frontmatter for matching video_id
-            if f'video_id: "{video_id}"' in content:
+            # Read only the first 512 bytes — frontmatter is at the top
+            with md_file.open(encoding="utf-8", errors="ignore") as f:
+                head = f.read(512)
+            if f'video_id: "{video_id}"' in head:
                 return md_file
         except OSError:
             continue
@@ -138,6 +150,11 @@ def extract_video_id(url_or_id: str) -> str:
             return match.group(1)
     print(f"Error: Could not extract video ID from '{url_or_id}'", file=sys.stderr)
     sys.exit(EXIT_ERROR)
+
+
+def yaml_escape(text: str) -> str:
+    """Escape a string for safe inclusion in double-quoted YAML values."""
+    return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def slugify(text: str) -> str:
@@ -219,10 +236,12 @@ def _format_upload_date(raw: str) -> str:
     return raw
 
 
-def detect_caption_type(ytt_api, video_id: str, lang: str) -> str:
-    """Detect whether the fetched transcript is manual or auto-generated."""
+def detect_caption_type(transcript_list, lang: str) -> str:
+    """Detect whether the fetched transcript is manual or auto-generated.
+
+    Accepts a pre-fetched transcript list to avoid a redundant API call.
+    """
     try:
-        transcript_list = ytt_api.list(video_id)
         for t in transcript_list:
             if t.language_code == lang or t.language_code.startswith(lang):
                 return "auto-generated" if t.is_generated else "manual"
@@ -244,6 +263,11 @@ def format_timestamp(seconds: float) -> str:
     return f"{m:02d}:{s:02d}"
 
 
+def sanitize_table_value(text: str) -> str:
+    """Escape pipe characters in text destined for a Markdown table cell."""
+    return text.replace("|", "\\|")
+
+
 def build_description_section(description: str, chapters: list) -> str:
     """Build the Video Description section from yt-dlp data."""
     if not description and not chapters:
@@ -252,7 +276,9 @@ def build_description_section(description: str, chapters: list) -> str:
     parts = ["\n## Video Description\n"]
 
     if description:
-        parts.append(description)
+        # Prevent stray --- lines from being parsed as frontmatter/thematic breaks
+        safe_desc = re.sub(r"^-{3,}$", "\\---", description, flags=re.MULTILINE)
+        parts.append(safe_desc)
 
     if chapters:
         parts.append("\n### Chapters\n")
@@ -280,6 +306,10 @@ def build_markdown(
     """Build the full Markdown file content with frontmatter and transcript."""
     video_url = f"https://www.youtube.com/watch?v={video_id}"
 
+    # Escape user-supplied values for safe YAML frontmatter
+    safe_title = yaml_escape(title)
+    safe_channel = yaml_escape(channel)
+
     # Build optional frontmatter fields
     extra_frontmatter = ""
     if duration:
@@ -295,12 +325,12 @@ def build_markdown(
         extra_rows += f"\n| Uploaded | {upload_date} |"
 
     return f"""---
-title: "{title}"
-channel: "{channel}"
+title: "{safe_title}"
+channel: "{safe_channel}"
 url: "{video_url}"
 video_id: "{video_id}"
 fetched: "{fetched_date}"
-source_project: "{source_project}"
+source_project: "{yaml_escape(source_project)}"
 language: "{language}"
 caption_type: "{caption_type}"{extra_frontmatter}
 tags:
@@ -314,9 +344,9 @@ tags:
 | Field    | Value |
 |----------|-------|
 | URL      | {video_url} |
-| Channel  | {channel} |{extra_rows}
+| Channel  | {sanitize_table_value(channel)} |{extra_rows}
 | Fetched  | {fetched_date} |
-| Source   | {source_project} |
+| Source   | {sanitize_table_value(source_project)} |
 | Language | {language} ({caption_type}) |
 {description_section}
 
@@ -375,9 +405,15 @@ def main():
     video_id = extract_video_id(args.video)
     ytt_api = YouTubeTranscriptApi()
 
+    # ── Fetch transcript list once (reused for list, fetch, and caption detection)
+    try:
+        transcript_list = ytt_api.list(video_id)
+    except Exception as e:
+        print(f"Error listing transcripts: {e}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+
     # ── List mode ───────────────────────────────────────────────────────
     if args.list:
-        transcript_list = ytt_api.list(video_id)
         for t in transcript_list:
             kind = "manual" if not t.is_generated else "auto"
             print(f"  [{t.language_code}] {t.language} ({kind})")
@@ -391,6 +427,11 @@ def main():
             print(f"\n  ⚠ This video was already transcribed on {fetched_on}")
             print(f"    File: {existing}\n")
 
+            if not sys.stdin.isatty():
+                # Non-interactive context (e.g., Claude, scripts, pipes)
+                print("  Skipped (duplicate). Use --force to re-fetch.", file=sys.stderr)
+                sys.exit(EXIT_DUPLICATE_SKIPPED)
+
             try:
                 answer = input("  Re-transcribe anyway? [y/N]: ").strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -401,9 +442,9 @@ def main():
                 sys.exit(EXIT_DUPLICATE_SKIPPED)
             print()
 
-    # ── Fetch transcript ────────────────────────────────────────────────
+    # ── Fetch transcript using pre-fetched list ────────────────────────
     try:
-        transcript = ytt_api.fetch(video_id, languages=[args.lang, "en"])
+        transcript = transcript_list.find_transcript([args.lang, "en"]).fetch()
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(EXIT_ERROR)
@@ -447,7 +488,7 @@ def main():
     metadata = fetch_video_metadata(video_id)
     today = date.today().isoformat()
     source_project = args.source or Path.cwd().name
-    caption_type = detect_caption_type(ytt_api, video_id, args.lang)
+    caption_type = detect_caption_type(transcript_list, args.lang)
 
     # ── Build description section ───────────────────────────────────────
     description_section = ""
@@ -479,7 +520,7 @@ def main():
     if args.output:
         out_path = Path(args.output)
     else:
-        filename = f"{today}_{slugify(metadata['title'])}.md"
+        filename = f"{today}_{slugify(metadata['title'])}_[{video_id}].md"
         TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
         out_path = TRANSCRIPTS_DIR / filename
 
