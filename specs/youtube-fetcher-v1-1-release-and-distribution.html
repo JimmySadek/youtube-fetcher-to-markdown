@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan: YouTube Fetcher v1.1 Release and Distribution</title>
+<style>
+  :root {
+    --bg: #f7faf9;
+    --surface: #ffffff;
+    --text: #17211f;
+    --muted: #60716c;
+    --border: #d7e4df;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --success: #15803d;
+    --success-soft: #dcfce7;
+    --warning: #b45309;
+    --warning-soft: #fef3c7;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
+    --external: #7c3aed;
+    --external-soft: #ede9fe;
+    --diagram-bg: #fbfefd;
+    --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.58; }
+  main { max-width: 1120px; margin: 0 auto; padding: 48px 24px; }
+  header, section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin: 0 0 24px; padding: 28px; }
+  h1, h2, h3 { text-wrap: balance; }
+  p, li { text-wrap: pretty; }
+  code, pre { font-family: var(--font-mono); }
+  .meta { color: var(--muted); }
+  .meta dl { display: grid; grid-template-columns: minmax(120px, 180px) 1fr; gap: 8px 18px; }
+  .meta dt { font-weight: 800; }
+  .meta dd { margin: 0; }
+  .executive-summary { border: 2px solid var(--accent); }
+  .summary-kicker { color: var(--accent); font-weight: 800; margin: 0 0 8px; }
+  .summary-stack, .contract-grid { display: grid; gap: 14px; }
+  .summary-grid, .contract-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-panel, .contract-item { border: 1px solid var(--border); border-radius: 10px; padding: 17px 18px; }
+  .summary-panel h3 { margin-top: 0; }
+  .summary-intent, .summary-outcome { background: var(--accent-soft); border-color: var(--accent); }
+  .summary-included { background: var(--success-soft); border-color: var(--success); }
+  .summary-excluded { background: var(--danger-soft); border-color: var(--danger); }
+  .summary-caution { background: var(--warning-soft); border-color: var(--warning); }
+  .summary-close { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 16px; }
+  .summary-close p { margin: 7px 0; }
+  .contract-item { background: var(--diagram-bg); }
+  table { border-collapse: collapse; display: block; overflow-x: auto; width: 100%; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--diagram-bg); }
+  figure { margin: 24px 0; }
+  figcaption { color: var(--muted); font-size: 0.95rem; margin-top: 10px; }
+  figure.diagram { background: var(--diagram-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; padding: 18px; }
+  pre.mermaid { background: transparent; margin: 0; white-space: pre-wrap; }
+  .mermaid svg { display: block; height: auto; margin: 0 auto; max-width: 100%; }
+  .phase { border-top: 1px solid var(--border); padding-top: 18px; }
+  .loop { background: var(--warning-soft); border: 1px solid var(--warning); border-radius: 8px; padding: 12px 14px; }
+  .questionable-list { display: grid; gap: 14px; list-style: none; padding: 0; }
+  .questionable-list details { border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .decision { background: var(--warning-soft); border-left: 4px solid var(--warning); padding: 12px 16px; }
+  .evidence { background: var(--external-soft); border-left: 4px solid var(--external); padding: 12px 16px; }
+  @media (max-width: 760px) {
+    main { padding: 24px 14px; }
+    .summary-grid, .contract-grid { grid-template-columns: 1fr; }
+    .meta dl { grid-template-columns: 1fr; }
+  }
+</style>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs";
+  const css = getComputedStyle(document.documentElement);
+  const pick = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+  mermaid.initialize({
+    startOnLoad: true,
+    securityLevel: "strict",
+    theme: "base",
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: true },
+    themeVariables: {
+      background: pick("--diagram-bg", "#fbfefd"),
+      primaryColor: pick("--accent-soft", "#dbeafe"),
+      primaryTextColor: pick("--text", "#17211f"),
+      primaryBorderColor: pick("--accent", "#2563eb"),
+      lineColor: pick("--muted", "#60716c"),
+      secondaryColor: pick("--success-soft", "#dcfce7"),
+      tertiaryColor: pick("--warning-soft", "#fef3c7"),
+      fontFamily: pick("--font-sans", "Inter, system-ui, sans-serif")
+    }
+  });
+</script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Plan: YouTube Fetcher v1.1 Release and Distribution</h1>
+    <details class="meta">
+      <summary>Metadata</summary>
+      <dl>
+        <dt>Planning level</dt><dd data-plan-level="full">Full PlanF3</dd>
+        <dt>Planning reason</dt><dd>The work changes a public skill, its installation contract, its release proof, and several third-party distribution channels with separate approval owners.</dd>
+        <dt>Status</dt><dd>Local release candidate complete — awaiting separate remote migration and publication approval.</dd>
+        <dt>Created</dt><dd>2026-08-03</dd>
+        <dt>Modified</dt><dd>2026-08-03 — initial plan, default-branch amendment, approved local build, and verified release-candidate closeout</dd>
+        <dt>Commits</dt><dd>Baseline <code>7ea84a0dbe3b8f150b11a3d371cbf06f27252939</code>; local v1.1 feature commit <code>f3a5028</code>; plan closeout is committed separately after validation.</dd>
+        <dt>Agent</dt><dd>Codex</dd>
+        <dt>Session</dt><dd>Current Codex desktop planning task</dd>
+        <dt>Back references</dt><dd><a href="../README.md">README</a>, <a href="../SKILL.md">skill contract</a>, <a href="../scripts/fetch_transcript.py">runtime script</a>, <a href="https://skills.sh/jimmysadek/youtube-fetcher-to-markdown/youtube-fetcher">skills.sh listing</a>, <a href="https://codeguilds.dev/packages/youtube-fetcher-to-markdown">CodeGuilds listing</a></dd>
+        <dt>Forward references</dt><dd>Future build commits, release URL, external issue and submission URLs will be appended only after their separate approvals.</dd>
+      </dl>
+    </details>
+  </header>
+
+  <section id="executive-summary" class="executive-summary" aria-labelledby="approval-view-heading">
+    <p class="summary-kicker">👋 Approval View</p>
+    <h2 id="approval-view-heading">A simple view of what you are approving</h2>
+    <div class="summary-stack">
+      <article class="summary-panel summary-intent">
+        <h3>🧭 Your intent</h3>
+        <p data-summary-item="user-intent">Protect the simple idea that made YouTube Fetcher popular, fix the weaknesses found in the audit, and turn its real community usage into careful distribution through trusted skill libraries.</p>
+      </article>
+      <article class="summary-panel summary-outcome">
+        <h3>🎯 Expected outcome</h3>
+        <p data-summary-item="outcome">YouTube Fetcher v1.1 reliably creates correct, Obsidian-ready archival notes, installs as a complete skill across supported agents, and has a release package strong enough for selective public submissions.</p>
+      </article>
+      <div class="summary-grid">
+        <article class="summary-panel summary-included">
+          <h3>📦 What you will receive</h3>
+          <div data-summary-item="deliverables"><ul><li>A focused v1.1 maintenance release.</li><li>Automated tests and an isolated install check.</li><li>Clearer Obsidian and knowledge-base positioning.</li><li>A controlled move from master to main with post-move checks.</li><li>A verified CodeGuilds decision and selective submission wave.</li><li>A short adoption measurement record.</li></ul></div>
+          <p><strong>✅ Included:</strong> <span data-summary-item="included">URL and language correctness, portable paths, output-directory choice, dependency consent, packaging proof, a safe default-branch migration, release proof, CodeGuilds verification, and approved submissions.</span></p>
+        </article>
+        <article class="summary-panel summary-excluded">
+          <h3>🚫 Not included</h3>
+          <p data-summary-item="not-included">No Whisper transcription, video downloading, speaker identification, translation system, SaaS service, plugin conversion, mass directory spam, or copied forks of the skill.</p>
+        </article>
+      </div>
+      <article class="summary-panel summary-caution" data-summary-item="important-constraint">
+        <h3>⚠️ Important approval or constraint</h3>
+        <p>The approved local implementation is complete. GitHub publication, the branch migration, CodeGuilds changes or bug reports, and each external submission remain separate decisions. Existing untracked workspace folders must be preserved and kept outside the release.</p>
+      </article>
+    </div>
+    <div class="summary-close">
+      <p><strong>🏁 Finished means:</strong> <span data-summary-item="finished-means">A clean v1.1 release can be installed and used successfully in isolation, the repository and CodeGuilds images resolve through main, its claims match observed behavior, CodeGuilds is advertised only if its installer works, and every approved directory submission is traceable without creating a second source of truth.</span></p>
+      <p><strong>➡️ Next decision:</strong> <span data-summary-item="next-decision">Review the verified local release candidate, then separately approve or decline the remote branch migration and publication.</span></p>
+    </div>
+  </section>
+
+  <section id="purpose">
+    <h2>Purpose</h2>
+    <p>Convert a five-month-old, organically adopted skill into a small but professionally maintained public release without losing the direct promise that attracted users: one YouTube link becomes one useful Markdown knowledge note.</p>
+  </section>
+
+  <section id="problem">
+    <h2>Problem</h2>
+    <p>The public skill works today, but several claims are broader than the implementation. Common YouTube URL shapes fail, a language fallback can be mislabeled, the skill instructions assume Jimmy's local install path, agents are told to bypass duplicate protection and install dependencies without approval, and there is no automated regression or installation proof. Promotion before correcting these weaknesses would increase support and trust risk. CodeGuilds adds a separate external blocker: its current CLI failed an isolated install test, its imported banner points to a nonexistent branch, and its public tagline is clipped.</p>
+    <p class="evidence"><strong>Current evidence:</strong> 190 GitHub stars, 118 deduplicated skills.sh installs, 15 forks, complete installation through the current <code>npx skills</code> CLI, and a successful live transcript smoke test. The strongest competing transcript skill has substantially more installs and features, so v1.1 should win through a simpler archival-note contract rather than feature imitation.</p>
+  </section>
+
+  <section id="solution">
+    <h2>Solution</h2>
+    <p>Ship one maintenance release with a narrow sequence: lock the product promise, fix correctness, make the bundle portable, prove it in clean environments, publish only after a release gate, then distribute through high-signal link catalogs. CodeGuilds follows its own verification gate and cannot block the other approved channels.</p>
+    <figure class="diagram">
+      <pre class="mermaid">flowchart TD
+  accTitle: YouTube Fetcher v1.1 release and distribution gates
+  accDescr: The plan moves from the current public skill through approval, hardening, independent verification, release, CodeGuilds validation, selective submissions, and adoption measurement.
+
+  BASE["Current public skill<br/>190 stars · 118 installs"]:::existing
+  BUILD{"Jimmy approves build"}:::user
+  HARDEN["v1.1 correctness<br/>and portability"]:::proposed
+  PROOF["Automated tests · isolated install<br/>live transcript smoke"]:::validation
+  GATE{"Release candidate passes<br/>all acceptance checks"}:::decision
+  MIGRATE["Controlled branch migration<br/>master → main"]:::validation
+  RELEASE["Publish v1.1 on main<br/>after remote approval"]:::success
+  CODEGUILDS{"CodeGuilds install<br/>works in isolation"}:::external
+  BADGE["Update claimed listing<br/>and add verified badge"]:::success
+  HOLD["Keep listing<br/>withhold badge"]:::risk
+  SUBMIT["Selective submissions<br/>VoltAgent · Travis · hesreallyhim when open"]:::external
+  MEASURE["Weekly 14-day snapshots<br/>visits · clones · stars · installs"]:::validation
+
+  BASE --> BUILD
+  BUILD -->|"Approved"| HARDEN
+  HARDEN ==> PROOF
+  PROOF --> GATE
+  GATE -->|"No — repair"| HARDEN
+  GATE ==>|"Yes"| MIGRATE
+  MIGRATE ==> RELEASE
+  RELEASE --> CODEGUILDS
+  CODEGUILDS -->|"Pass"| BADGE
+  CODEGUILDS -->|"Fail"| HOLD
+  BADGE --> SUBMIT
+  HOLD --> SUBMIT
+  SUBMIT --> MEASURE
+
+  classDef existing fill:#F1F5F9,stroke:#475569,color:#0F172A,stroke-width:2px;
+  classDef user fill:#FEF3C7,stroke:#B45309,color:#111827,stroke-width:2px;
+  classDef proposed fill:#DBEAFE,stroke:#1D4ED8,color:#0F172A,stroke-width:2px;
+  classDef validation fill:#DCFCE7,stroke:#15803D,color:#052E16,stroke-width:2px;
+  classDef decision fill:#FEF3C7,stroke:#B45309,color:#111827,stroke-width:2px;
+  classDef success fill:#DCFCE7,stroke:#15803D,color:#052E16,stroke-width:3px;
+  classDef external fill:#EDE9FE,stroke:#6D28D9,color:#2E1065,stroke-width:2px;
+  classDef risk fill:#FEE2E2,stroke:#C1121F,color:#450A0A,stroke-width:2px;</pre>
+      <figcaption>Solid arrows show the normal sequence; thick arrows show the release-critical proof path. Every decision is written in the node or edge label, so color is not required to understand the diagram.</figcaption>
+    </figure>
+  </section>
+
+  <section id="success-contract">
+    <h2>Success Contract</h2>
+    <div class="contract-grid">
+      <div class="contract-item"><strong>User outcome</strong><p>A user can install the complete skill, provide a supported YouTube link, and receive a correctly labeled, queryable Markdown note in the expected location without an API key or an unexpected overwrite.</p></div>
+      <div class="contract-item"><strong>Acceptance criteria</strong><p>Standard, short, embed, Shorts, live, reordered-query, and raw-ID inputs resolve correctly. The actual selected caption language is recorded. Output-directory precedence is deterministic. Duplicate handling is safe. Python 3.8 support is either proven or the public minimum is corrected. The default branch is migrated to <code>main</code> without breaking local worktrees, installation, or current public assets. Tests, isolated install, skill validation, and a live smoke test pass.</p></div>
+      <div class="contract-item"><strong>Invariants</strong><p>GitHub remains the canonical source. The default result remains a single local Markdown archival note with transcript, creator description, chapters when available, metadata, and capture provenance. No API key is required. Existing user files are not silently overwritten.</p></div>
+      <div class="contract-item"><strong>Non-goals</strong><p>No feature race with larger transcript tools. No Whisper fallback, cover-image pipeline, speaker labeling, translation workflow, video download, hosted API, Claude plugin, or vendored copies in third-party repositories during v1.1.</p></div>
+      <div class="contract-item"><strong>Failure conditions</strong><p>The plan fails if output metadata can be false, a documented URL remains unsupported, installation omits the script, an agent mutates dependencies without consent, the default-branch migration breaks an installer or registered worktree, CodeGuilds is badged while its installer fails, unrelated local folders are staged, or external publication occurs without the matching approval.</p></div>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>Key Design Decisions</h2>
+    <table>
+      <thead><tr><th>Decision</th><th>Chosen direction</th><th>Why</th><th>Rejected alternative</th></tr></thead>
+      <tbody>
+        <tr><td>Release shape</td><td>Focused v1.1 maintenance release</td><td>Correctness and trust are the blockers to responsible promotion.</td><td>Immediate directory submissions or a broad v2 feature expansion.</td></tr>
+        <tr><td>Market position</td><td>Obsidian-ready archival knowledge note</td><td>The skill appears for “YouTube Markdown” but not “Obsidian YouTube”; generic transcript search is dominated by larger skills.</td><td>Claim category leadership as a general transcript extractor.</td></tr>
+        <tr><td>Output configuration</td><td><code>--output</code> &gt; <code>--output-dir</code> &gt; <code>YOUTUBE_FETCHER_DIR</code> &gt; <code>~/yt_transcripts</code></td><td>Preserves the current default while giving Obsidian users a persistent vault target.</td><td>Replace the default or require a config file.</td></tr>
+        <tr><td>Dependency declaration</td><td>Small <code>requirements.txt</code> plus explicit optional <code>yt-dlp</code> guidance</td><td>Simple, inspectable, and compatible with the existing script distribution.</td><td>Turn the skill into a packaged Python application or require <code>uv</code>/<code>bun</code>.</td></tr>
+        <tr><td>Default branch</td><td>Controlled rename from <code>master</code> to <code>main</code> during the publication gate</td><td><code>main</code> is the preferred convention, it repairs CodeGuilds' current raw image and README paths, and the safety audit found no tracked or indexed dependency on <code>master</code>.</td><td>Keep <code>master</code> solely to preserve convention, or maintain a stale compatibility branch.</td></tr>
+        <tr><td>Directory model</td><td>Link-based catalogs pointing to GitHub</td><td>One source receives updates and security fixes.</td><td>Copied or vendored skill forks that drift.</td></tr>
+        <tr><td>CodeGuilds</td><td>Keep claimed listing; badge only after clean install</td><td>Presence is useful, but a badge is a trust claim.</td><td>Add the badge immediately because the listing exists.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="files">
+    <h2>Relevant Files</h2>
+    <h3>Existing files</h3>
+    <ul>
+      <li><code>SKILL.md</code> — trigger language, agent workflow, dependency consent, duplicate behavior, and portable script resolution.</li>
+      <li><code>scripts/fetch_transcript.py</code> — URL parsing, language selection, output handling, metadata generation, and runtime errors.</li>
+      <li><code>README.md</code> — public promise, installation, examples, limitations, capability disclosure, release proof, and badges.</li>
+      <li><code>.gitignore</code> — generated Python files only; existing untracked tool folders stay outside scoped staging unless separately reviewed.</li>
+      <li><code>assets/banner.png</code> — GitHub presentation; verify its new raw <code>main</code> URL and its CodeGuilds rendering after the branch migration.</li>
+      <li><code>LICENSE</code> — MIT licensing proof required by directories.</li>
+    </ul>
+    <h3>New files</h3>
+    <ul>
+      <li><code>tests/test_fetch_transcript.py</code> — deterministic regression coverage using standard-library mocks and temporary directories.</li>
+      <li><code>requirements.txt</code> — supported dependency ranges for the required Python packages.</li>
+      <li><code>agents/openai.yaml</code> — Codex-facing display name, short description, and default prompt generated from the final skill contract.</li>
+      <li><code>.github/workflows/ci.yml</code> — syntax, unit, skill, and supported-Python checks on pushes and pull requests.</li>
+      <li><code>.scripts/verify-isolated-install.sh</code> — release helper that uses temporary home and npm-cache paths and proves the installed bundle contains the runtime script.</li>
+    </ul>
+  </section>
+
+  <section id="phases">
+    <h2>Implementation Phases</h2>
+
+    <div class="phase">
+      <h3><code class="status">[x]</code> Phase 0: Protect the baseline and open the build gate</h3>
+      <p>Begin only after Jimmy approves this plan for build. Create a dedicated <code>codex/youtube-fetcher-v1-1</code> branch from the synchronized <code>7ea84a0</code> baseline. Preserve the registered Claude worktree and all untracked tool data.</p>
+      <ul>
+        <li><code class="status">[x]</code> Re-fetched <code>origin</code>; local and remote <code>master</code> both remain at the approved <code>7ea84a0</code> baseline.</li>
+        <li><code class="status">[x]</code> Recorded the baseline: 191 stars, 15 forks, 118 prior deduplicated skills.sh installs, 280 views from 122 visitors, and 278 clones from 149 cloners in the available traffic window.</li>
+        <li><code class="status">[x]</code> Scoped custody is active: use explicit file pathspecs for every stage operation and never use <code>git add .</code>.</li>
+        <li><code class="status">[x]</code> Build authority was confirmed as local only; no push, tag, release, issue, comment, or submission is authorized.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul><li><code class="status">[x]</code> <code>git status --short --branch &amp;&amp; git worktree list --porcelain</code> proved the new <code>codex/youtube-fetcher-v1-1</code> branch and preserved the separate Claude worktree.</li></ul>
+      <div class="loop">🔁 Stop if the baseline moved, the registered worktree is ambiguous, or intended files overlap unrelated user changes.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[x]</code> Phase 1: Lock the public promise and safe agent behavior</h3>
+      <p>Make the skill assistant-neutral and location-independent while sharpening the distinct “archival knowledge note” promise.</p>
+      <ul>
+        <li><code class="status">[x]</code> Added Obsidian, knowledge-base, archival-note, transcript, description, chapters, and provenance triggers in concise frontmatter.</li>
+        <li><code class="status">[x]</code> Replaced the hardcoded Skillshare path with instructions to resolve the bundled script relative to the active <code>SKILL.md</code>.</li>
+        <li><code class="status">[x]</code> Removed automatic <code>--force</code>; exit code 3 is now a safe existing-note outcome requiring overwrite approval.</li>
+        <li><code class="status">[x]</code> Missing dependencies are reported with commands, while the skill requires user permission before any host mutation.</li>
+        <li><code class="status">[x]</code> Preserved the approved bare-link behavior and made the save-path report explicit.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul>
+        <li><code class="status">[x]</code> <code>python3 /Users/OldJimmy/.codex/skills/.system/skill-creator/scripts/quick_validate.py .</code> passed.</li>
+        <li><code class="status">[x]</code> Trigger review and bundle tests cover transcript, Obsidian, knowledge-base, Markdown, and bare-link behavior.</li>
+      </ul>
+      <div class="loop">🔁 Do not continue if the new description turns the skill into a generic transcript promise or silently broadens v1.1.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[x]</code> Phase 2: Fix runtime correctness</h3>
+      <p>Repair the observed defects with narrow helper changes and deterministic tests.</p>
+      <ul>
+        <li><code class="status">[x]</code> URL parsing now covers reordered watch queries, short, embed, Shorts, live, mobile, music, privacy-enhanced, legacy, and raw-ID inputs while rejecting lookalike hosts.</li>
+        <li><code class="status">[x]</code> The selected transcript object supplies the saved language and caption type; mismatched fallback emits a visible warning.</li>
+        <li><code class="status">[x]</code> Added <code>--output-dir</code> and <code>YOUTUBE_FETCHER_DIR</code> with the approved precedence; duplicate detection uses the resolved directory.</li>
+        <li><code class="status">[x]</code> Dynamic YAML values use safe quoted scalars, and headings, tables, and chapter labels remain structurally contained.</li>
+        <li><code class="status">[x]</code> Preserved Python 3.8 after the full suite and compile check passed on disposable CPython 3.8.20.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul>
+        <li><code class="status">[x]</code> Fourteen deterministic tests cover URL parsing, language fallback, directory precedence, duplicate behavior, YAML safety, output shape, and bundle contents.</li>
+        <li><code class="status">[x]</code> Compile checks passed on Python 3.8, the active Python 3.10, and Python 3.13.</li>
+      </ul>
+      <div class="loop">🔁 Stop if a correctness fix changes the single-note output contract or requires a new runtime service.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[x]</code> Phase 3: Make the distributed bundle provable</h3>
+      <p>Add the minimum maintenance machinery required for a public scripted skill.</p>
+      <ul>
+        <li><code class="status">[x]</code> Declared tested required dependency ranges in <code>requirements.txt</code>; <code>yt-dlp</code> remains optional with reduced-metadata behavior documented.</li>
+        <li><code class="status">[x]</code> Generated and validated <code>agents/openai.yaml</code> from the final skill contract.</li>
+        <li><code class="status">[x]</code> Added CI for Python 3.8 and 3.13, deterministic tests, compile check, and bundle-contract tests.</li>
+        <li><code class="status">[x]</code> Added a temporary-home/project/cache installer proof that checks the complete copied runtime bundle.</li>
+        <li><code class="status">[x]</code> Documented network, filesystem, subprocess, and dependency capabilities in the skill and README.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul>
+        <li><code class="status">[x]</code> <code>bash .scripts/verify-isolated-install.sh</code> copied and verified the skill through Skills CLI 1.5.21 without touching real installs.</li>
+        <li><code class="status">[x]</code> <code>python3 scripts/fetch_transcript.py --check-deps</code> passed from both source and the isolated installed copy.</li>
+        <li><code class="status">[x]</code> The local Python 3.8 and 3.13 matrix passed; GitHub-hosted CI execution remains part of the publication gate.</li>
+      </ul>
+      <div class="loop">🔁 Do not publish if the installer reports success but omits any runtime file.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[x]</code> Phase 4: Build and review the release candidate</h3>
+      <p>Turn the code and documentation into a release candidate, then require outcome proof and explicit publication approval.</p>
+      <ul>
+        <li><code class="status">[x]</code> Live stdout smoke produced a 45,708-byte, 1,200-line note with valid frontmatter, metadata table, actual language, and a non-empty transcript without saving a user file.</li>
+        <li><code class="status">[x]</code> Live temporary-vault smoke saved a 45,707-byte note, warned on <code>zz</code> to <code>en</code> fallback, parsed as YAML, and returned exit code 3 without overwriting on repeat.</li>
+        <li><code class="status">[x]</code> README examples, limitations, supported URL shapes, output precedence, Python version, capabilities, and installation claims match observed results.</li>
+        <li><code class="status">[x]</code> A screenshot or GIF was deliberately omitted because the stable text output and live proof communicate the result more clearly.</li>
+        <li><code class="status">[x]</code> Fresh-context verification was not separately authorized; no independent-verifier claim is made.</li>
+        <li><code class="status">[x]</code> Created local conventional feature commit <code>f3a5028</code>; no push, tag, or release occurred.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul>
+        <li><code class="status">[x]</code> The full deterministic regression suite passed on all tested Python versions.</li>
+        <li><code class="status">[x]</code> <code>python3 scripts/fetch_transcript.py 'https://youtu.be/hSTy_BInQs8' --stdout --no-description</code> passed end to end without saving a transcript.</li>
+        <li><code class="status">[x]</code> <code>git diff --check</code> passed; explicit path staging contained only the nine v1.1 files; feature commit <code>f3a5028</code> succeeded.</li>
+      </ul>
+      <div class="loop">🔁 A passing command is insufficient if the Markdown note, fallback warning, or duplicate outcome is wrong.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[]</code> Phase 5: Migrate to <code>main</code> and publish v1.1 only after the remote-action gate</h3>
+      <p>Publication and the default-branch migration are remote changes under one explicit approval gate. Rename the synchronized baseline first, update and verify local tracking, then publish the reviewed v1.1 work against <code>main</code>.</p>
+      <ul>
+        <li><code class="status">[]</code> Immediately before the rename, re-check tracked branch references, open pull requests, releases, branch protection, rulesets, Pages, workflows, GitHub code search, and the registered Claude worktree.</li>
+        <li><code class="status">[]</code> After exact remote approval, rename GitHub's default branch from <code>master</code> to <code>main</code>; do not keep an unsynchronized compatibility branch.</li>
+        <li><code class="status">[]</code> Update the local clone with GitHub's documented branch-rename sequence: rename the local branch, fetch, track <code>origin/main</code>, and refresh <code>origin/HEAD</code>. Confirm the separate Claude worktree and its branch are unchanged.</li>
+        <li><code class="status">[]</code> Prove the raw <code>main</code> README and banner URLs return successfully, the CodeGuilds image resolves, and an isolated <code>npx skills</code> install remains complete.</li>
+        <li><code class="status">[]</code> Confirm the target commit and release notes agree with the verified candidate.</li>
+        <li><code class="status">[]</code> Push and open or update the review surface against <code>main</code> only after exact approval.</li>
+        <li><code class="status">[]</code> Tag and release only the merged, verified commit.</li>
+        <li><code class="status">[]</code> Re-run the public <code>npx skills</code> install from the released ref in isolation.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul><li><code class="status">[]</code> Default-branch API state, local upstream and remote HEAD, worktree inventory, raw asset requests, CodeGuilds page check, GitHub release, tag ancestry, CI, and isolated released install — proves the migration and public artifact agree.</li></ul>
+      <div class="loop">🔁 Stop and rename back before publication if local tracking, a registered worktree, raw <code>main</code> assets, CodeGuilds rendering, or the public installer fails. Stop publication if the tag, release notes, default branch, or installer points to a different artifact.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[]</code> Phase 6: Repair and verify CodeGuilds as an independent channel</h3>
+      <p>CodeGuilds work needs its own external-action approval and may proceed in parallel with directory research after v1.1 is public.</p>
+      <ul>
+        <li><code class="status">[]</code> With approval, report the published CLI packaging failure to <code>xdevsapps/codeguilds-cli</code> with the isolated stack trace and no speculation beyond the observed relative path.</li>
+        <li><code class="status">[]</code> Confirm that the branch migration repaired the imported <code>main</code>-branch banner and README URLs; report a CodeGuilds importer bug only if rendering still fails.</li>
+        <li><code class="status">[]</code> Correct the clipped tagline and update the claimed listing to the released v1.1 promise.</li>
+        <li><code class="status">[]</code> Re-test <code>codeguilds info</code> and <code>codeguilds install --project</code> inside isolated home, cache, and project directories.</li>
+        <li><code class="status">[]</code> Add the CodeGuilds badge only after the installed files and a live use test pass.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul><li><code class="status">[]</code> Isolated CodeGuilds install file inventory plus live transcript smoke — proves the badge represents a working route.</li></ul>
+      <div class="loop">🔁 CodeGuilds failure blocks its badge, not the verified v1.1 release or other approved submissions.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[]</code> Phase 7: Submit selectively and preserve one source of truth</h3>
+      <p>Use separate approval for each submission. Tailor the factual description to each current policy; do not copy Strategic Partner's old drafts.</p>
+      <ul>
+        <li><code class="status">[]</code> Submit to VoltAgent under Community Skills using a link-only entry of ten words or fewer and current usage evidence.</li>
+        <li><code class="status">[]</code> Jimmy personally authors the Travis submission and acknowledges its no-AI-submission rule; Codex may provide factual evidence but not final prose.</li>
+        <li><code class="status">[]</code> Wait for hesreallyhim recommendations to reopen; then use the required human web form and a factual one-line description.</li>
+        <li><code class="status">[]</code> Let skills.sh refresh from the canonical repository and add its install-count badge after v1.1.</li>
+        <li><code class="status">[]</code> Defer Composio and vendored-copy catalogs unless their review throughput and source-sync model improve.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul><li><code class="status">[]</code> Policy re-read, duplicate search, working links, released install command, and recorded issue or PR URL for every approved channel.</li></ul>
+      <div class="loop">🔁 Rejection is recorded as channel evidence; do not resubmit repeatedly or weaken source custody to gain a listing.</div>
+    </div>
+
+    <div class="phase">
+      <h3><code class="status">[]</code> Phase 8: Measure adoption and close the release track</h3>
+      <p>Separate work completed from audience response. Directory acceptance is controlled by maintainers, while accurate measurement and follow-up are controllable.</p>
+      <ul>
+        <li><code class="status">[]</code> Capture weekly GitHub views, unique visitors, clones, unique cloners, referrers, stars, forks, and skills.sh installs for four weeks after the first accepted listing.</li>
+        <li><code class="status">[]</code> Record each channel as submitted, accepted, rejected, paused, or blocked.</li>
+        <li><code class="status">[]</code> Compare the four-week result with the pre-release baseline without attributing causation where referral evidence is absent.</li>
+        <li><code class="status">[]</code> Decide keep, refine, or stop for each channel; do not expand to long-tail registries without evidence.</li>
+      </ul>
+      <h4>Testing strategy</h4>
+      <ul><li><code class="status">[]</code> Dated metrics snapshots and direct submission URLs — preserves evidence before GitHub's 14-day traffic window expires.</li></ul>
+      <div class="loop">🔁 The track closes with a factual result even if a directory declines or produces no measurable traffic.</div>
+    </div>
+  </section>
+
+  <section id="verification-matrix">
+    <h2>Verification Matrix</h2>
+    <table>
+      <thead><tr><th>Deliverable</th><th>Acceptance bar</th><th>Evidence</th><th>Verifier</th><th>Timing</th><th>Failure response</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime correctness</td><td>All documented URL shapes work; requested-language fallback is truthful; output is valid and non-empty.</td><td>Unit suite plus two live smoke artifacts.</td><td>Builder; fresh reviewer if authorized.</td><td>Before local release commit.</td><td>Block release and repair the failing contract.</td></tr>
+        <tr><td>Output configuration</td><td>Per-file, per-run directory, environment directory, and default precedence are deterministic; duplicate detection uses the resolved location.</td><td>Temporary-directory tests and visible duplicate result.</td><td>Builder.</td><td>Phase 2.</td><td>Keep the current default and remove incomplete configuration claims.</td></tr>
+        <tr><td>Safe agent behavior</td><td>No automatic dependency installation or overwrite; exit code 3 is handled as a safe existing-artifact outcome.</td><td>SKILL review and scenario tests.</td><td>Jimmy for product behavior; builder for mechanics.</td><td>Before release candidate.</td><td>Amend instructions and tests before continuing.</td></tr>
+        <tr><td>Complete public install</td><td>Current public install route contains every required file and runs from its installed location.</td><td>Isolated home/cache file inventory and smoke test.</td><td>Builder; CI where practical.</td><td>Before and after release.</td><td>Block release; fix package layout or installation guidance.</td></tr>
+        <tr><td>Default-branch migration</td><td>GitHub defaults to <code>main</code>; the local branch tracks <code>origin/main</code>; <code>origin/HEAD</code>, registered worktrees, raw assets, CodeGuilds rendering, and the isolated installer all remain correct.</td><td>GitHub API, Git branch and worktree state, raw URL status, page check, and isolated install transcript.</td><td>Jimmy approves the remote action; builder runs and verifies the migration.</td><td>Phase 5 before publication.</td><td>Rename back before publishing v1.1 and record the failing dependency.</td></tr>
+        <tr><td>v1.1 release</td><td>CI, tests, live smoke, docs, commit, tag, release notes, and public installed artifact agree.</td><td>GitHub checks, tag ancestry, release URL, install transcript.</td><td>Jimmy approves publication; builder verifies artifact.</td><td>Publication gate.</td><td>Do not tag or retract/correct before promotion.</td></tr>
+        <tr><td>CodeGuilds channel</td><td>CLI starts, installs the full bundle, and the installed skill completes a live smoke; listing text and image render correctly.</td><td>Isolated logs, file inventory, page check.</td><td>Builder plus CodeGuilds external dependency.</td><td>After vendor fix and v1.1.</td><td>Keep listing, withhold badge, record blocker.</td></tr>
+        <tr><td>Directory submissions</td><td>Each uses the current policy, released URL, factual positioning, and separate approval; no vendored drift.</td><td>Issue or PR URL and policy checklist.</td><td>Jimmy for human-only text and external action; builder for facts.</td><td>After release.</td><td>Correct once if invited; otherwise record rejection and stop.</td></tr>
+        <tr><td>Adoption measurement</td><td>Four weekly snapshots distinguish observed counts from inference and preserve the 14-day traffic data.</td><td>Dated metrics and channel-state table.</td><td>Jimmy or an approved monitor.</td><td>Weeks 1–4 after first acceptance.</td><td>Report missing windows honestly; do not invent attribution.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="long-run-contract">
+    <h2>Long-Run Contract</h2>
+    <p>The distribution observation window lasts four weeks after the first directory acceptance. Take one snapshot per week; do not poll continuously. Stop earlier for any security or installer regression. External maintainer silence is not a blocker to closing the engineering release. After four weeks, produce a concise keep/refine/stop judgment for each channel. Creating an automation or Site requires separate approval; this plan does not create either.</p>
+  </section>
+
+  <section id="validation">
+    <h2>Validation</h2>
+    <ul>
+      <li><code class="status">[x]</code> <code>python3 -m unittest discover -s tests -v</code> — deterministic runtime and bundle contract passed.</li>
+      <li><code class="status">[x]</code> <code>python3 -m py_compile scripts/fetch_transcript.py</code> — passed on Python 3.8, 3.10, and 3.13.</li>
+      <li><code class="status">[x]</code> <code>python3 /Users/OldJimmy/.codex/skills/.system/skill-creator/scripts/quick_validate.py .</code> — skill packaging passed.</li>
+      <li><code class="status">[x]</code> <code>bash .scripts/verify-isolated-install.sh</code> — complete local candidate bundle passed through Skills CLI 1.5.21.</li>
+      <li><code class="status">[x]</code> Live stdout smoke plus temporary output-directory smoke — user outcome passed.</li>
+      <li><code class="status">[]</code> GitHub CI and tag/release ancestry — public artifact agreement.</li>
+      <li><code class="status">[x]</code> Mermaid parse and render checks plus the 273-word PlanF3 Approval View validation passed.</li>
+    </ul>
+  </section>
+
+  <section id="continuity-closeout">
+    <h2>Continuity Closeout</h2>
+    <p>This HTML plan is the authoritative v1.1 and distribution contract. The local feature candidate is committed at <code>f3a5028</code>; this closeout record is committed separately so it can reference that evidence truthfully. Future approved work must append release and submission URLs and updated Promised/Delivered/Missing status here. Do not create new project memory categories, submission prompt artifacts, or copied distribution repositories by default.</p>
+    <table>
+      <thead><tr><th>Promise</th><th>Status</th><th>Evidence or next gate</th></tr></thead>
+      <tbody>
+        <tr><td>Focused v1.1 maintenance candidate</td><td>Delivered locally</td><td>Feature commit <code>f3a5028</code>; correctness, portability, documentation, and safe-agent changes pass deterministic and live checks.</td></tr>
+        <tr><td>Automated tests and isolated install proof</td><td>Delivered locally</td><td>Fourteen tests pass on Python 3.8 and 3.13; Skills CLI 1.5.21 copies every required file.</td></tr>
+        <tr><td>Obsidian and knowledge-base positioning</td><td>Delivered locally</td><td>Validated frontmatter, README, and Codex metadata use the focused archival-note promise.</td></tr>
+        <tr><td>Move from <code>master</code> to <code>main</code></td><td>Missing by design</td><td>Blocked on the separate remote publication approval after the local candidate is committed.</td></tr>
+        <tr><td>CodeGuilds verification and submissions</td><td>Missing by design</td><td>Blocked on v1.1 publication plus separate external-action approvals.</td></tr>
+        <tr><td>Four-week adoption record</td><td>Not started</td><td>Begins only after the first approved directory acceptance.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="questionables">
+    <h2>Questionables</h2>
+    <ol class="questionable-list">
+      <li id="questionable-1"><details><summary>Questionable 1: Should a bare YouTube link immediately create a file?</summary><p><strong>Recommendation for v1.1:</strong> preserve the current behavior because it is part of the simple viral promise, but make the skill state the save location clearly and never use <code>--force</code> automatically. If Jimmy prefers an intent question for bare links, amend Phase 1 before build.</p></details></li>
+      <li id="questionable-2"><details open><summary>Questionable 2 — resolved: Should Python 3.8 remain supported?</summary><p><strong>Decision:</strong> yes. The implementation uses deferred annotations, the declared dependency ranges support Python 3.8, and all fourteen tests plus compilation passed on disposable CPython 3.8.20. CI will repeat the proof after publication approval.</p></details></li>
+      <li id="questionable-3"><details open><summary>Questionable 3 — resolved: Should the repository rename <code>master</code> to <code>main</code>?</summary><p><strong>Decision:</strong> yes, as a controlled migration during the separately approved publication gate. Jimmy prefers the mainstream convention provided it does not disturb users or local custody. The 2026-08-03 audit found no remote <code>main</code>, open pull requests, releases, tags, Pages site, workflows, protection rule, tracked <code>master</code> references, or indexed external <code>master</code> links. GitHub redirects normal file pages but not raw URLs or old pull commands, so the plan includes a last-minute dependency re-check, local tracking migration, raw-asset and installer proof, registered-worktree verification, and rollback before publication if any check fails.</p></details></li>
+      <li id="questionable-4"><details><summary>Questionable 4: Should v1.1 add speaker identification, translation, cover images, or caching to compete with the 18.3k-install leader?</summary><p><strong>Recommendation:</strong> no. Those features would blur the release and make review harder. Compete through a smaller, dependable, single-file archival-note experience. Reconsider advanced features only after observing user requests after v1.1.</p></details></li>
+      <li id="questionable-5"><details><summary>Questionable 5: Should CodeGuilds receive a badge immediately because the listing is claimed?</summary><p><strong>Recommendation:</strong> no. Keep the claimed page, fix its metadata, and add the badge only after its published installer successfully copies and runs the full skill in isolation.</p></details></li>
+      <li id="questionable-6"><details><summary>Questionable 6: Should the skill be copied into large community repositories?</summary><p><strong>Recommendation:</strong> prefer link-based catalogs. A copied skill becomes a second source that can miss fixes and dependency updates. Consider vendoring only when a directory proves meaningful reach and has an explicit upstream synchronization model.</p></details></li>
+    </ol>
+  </section>
+
+  <section id="notes">
+    <h2>Notes</h2>
+    <ul>
+      <li>VoltAgent's prior Strategic Partner rejection was specifically about missing real community usage; YouTube Fetcher's present evidence addresses that concern but does not guarantee acceptance.</li>
+      <li>Travis requires a human-authored submission. Codex must not provide final submission prose for Jimmy to paste verbatim.</li>
+      <li>hesreallyhim currently says recommendations are paused while the list catches up. Do not open a new issue until the policy changes.</li>
+      <li>Composio has high headline reach but slow observed review throughput and a copy-based model; it is intentionally not in the first wave.</li>
+      <li>Current local Git state is synchronized at <code>7ea84a0</code> but not clean because <code>.claude/</code> and <code>.serena/</code> are untracked. They are protected, not part of v1.1.</li>
+      <li>The default-branch audit on 2026-08-03 found <code>master</code> unprotected and synchronized, no remote <code>main</code>, and no repository feature that currently depends on the old name. CodeGuilds currently requests raw <code>main</code> URLs: its banner and README requests fail today and should begin resolving after the rename.</li>
+    </ul>
+  </section>
+
+  <section id="amendments">
+    <h2>Amendments</h2>
+    <p><strong>2026-08-03 — default branch:</strong> Replaced the recommendation to preserve <code>master</code> with a controlled migration to <code>main</code>. The change follows Jimmy's preference and a live safety audit. It adds preflight, local-clone, registered-worktree, raw-asset, CodeGuilds, installer, and rollback checks. Review is reopened; no branch or remote state has changed.</p>
+    <p><strong>2026-08-03 — build authorized:</strong> Jimmy approved the plan for local implementation. Phase 0 completed on <code>codex/youtube-fetcher-v1-1</code>. Remote publication, branch rename, release, CodeGuilds, and directory gates remain closed.</p>
+    <p><strong>2026-08-03 — local release candidate:</strong> Phases 1–4 completed in feature commit <code>f3a5028</code>. Deterministic tests, Python 3.8/3.13 compatibility, skill validation, formatting and shell checks, isolated installation, two live smokes, YAML parsing, and duplicate preservation passed. One pre-existing filename-glob defect was discovered by the new tests and repaired. No remote action occurred.</p>
+  </section>
+</main>
+</body>
+</html>
