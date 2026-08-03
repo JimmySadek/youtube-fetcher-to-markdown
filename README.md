@@ -1,10 +1,12 @@
 # YouTube Fetcher to Markdown
 
 <p align="center">
-  <img src="assets/banner.png" alt="YouTube Fetcher to Markdown — Claude Code Skill" width="100%">
+  <img src="assets/banner.png" alt="YouTube Fetcher to Markdown — archival note skill" width="100%">
 </p>
 
-YouTube video in, structured Markdown note out. Title, channel, description, chapters, transcript, and YAML frontmatter — one command, no API keys.
+YouTube video in, structured archival Markdown note out. Capture the transcript,
+creator metadata, description, chapters, actual caption language, and provenance
+in one Obsidian-ready file—without an API key.
 
 ```bash
 npx skills add JimmySadek/youtube-fetcher-to-markdown
@@ -12,9 +14,9 @@ npx skills add JimmySadek/youtube-fetcher-to-markdown
 
 ## What you get
 
-Paste a YouTube link, get a file like this:
+Paste a YouTube link and receive a file such as:
 
-```
+```text
 ~/yt_transcripts/2026-03-04_obsidian-the-king-of-learning-tools_[hSTy_BInQs8].md
 ```
 
@@ -48,58 +50,33 @@ tags:
 | Language | en (manual) |
 
 ## Video Description
-Obsidian has been the centerpiece of my self-education...
-[Full description with links and resources]
-
-### Chapters
-- `00:00` Intro
-- `00:16` Avoiding Toxic Perfectionism
-- `02:23` My Testimony
-- ...
+The creator's description, links, and chapter markers...
 
 ## Transcript
-almost a year ago I started building this you can call it
-a personal network of knowledge but you might know it as a...
+The complete caption text...
 ```
 
-The YAML frontmatter means tools like [Dataview](https://github.com/blacksmithgu/obsidian-dataview) can query across your whole transcript collection — filter by channel, date, language, whatever you need.
+The YAML frontmatter makes a collection queryable through tools such as
+[Dataview](https://github.com/blacksmithgu/obsidian-dataview), while the Markdown
+remains portable to Logseq, other knowledge bases, and plain text workflows.
 
 ## Why this exists
 
-There are dozens of transcript extractors. They give you raw caption text and nothing else.
-
-If you're building a knowledge base in Obsidian, Logseq, or plain Markdown, you need more than captions. You need to know what video this came from, who made it, when you captured it, and the creator's own description with chapter breakdowns and links.
-
-This skill captures all of that in one command, no API keys required.
+Most transcript extractors stop at raw caption text. An archival knowledge note
+also needs the source URL, creator, capture date, actual language, description,
+chapters, and a predictable filename. YouTube Fetcher keeps that complete record
+in one local file.
 
 ## Features
 
-### What it captures
-- Transcript text (manual and auto-generated captions)
-- Video metadata: title, channel, duration, upload date
-- The creator's description with links and resources
-- Chapter markers with timestamps
-
-### How it saves
-- Markdown files with YAML frontmatter — queryable with Obsidian Dataview
-- Filenames include the date, title slug, and video ID for easy lookup
-- Output also available as JSON or SRT
-
-### Things that save you time
-- Duplicate detection — warns you if a video was already transcribed
-- Source tracking — records which project directory triggered the fetch
-- Auto-checks dependencies on startup and tells you what to install
-- Still works without `yt-dlp` (you lose description and chapters, but keep the transcript)
-
-## How it works
-
-```
-YouTube URL → yt-dlp (metadata) + youtube-transcript-api (captions) → Structured Markdown
-```
-
-The script extracts the video ID from whatever URL format you give it, checks for duplicates, pulls metadata from `yt-dlp` and captions from `youtube-transcript-api`, combines them into a single Markdown file with frontmatter, and saves it to `~/yt_transcripts/`.
-
-If `yt-dlp` isn't installed, it falls back to YouTube's oEmbed API for basic metadata (title and channel) and still fetches the transcript.
+- Manual and auto-generated captions with optional timestamps
+- Truthful language fallback: the note records the selected caption language
+- Title, channel, duration, upload date, description, and chapters when available
+- Safe YAML frontmatter and Markdown tables for dynamic metadata
+- Duplicate detection that preserves existing notes unless overwrite is approved
+- Obsidian-vault and custom-directory output
+- Raw JSON and SRT export
+- No API keys and no hosted service
 
 ## Installation
 
@@ -109,106 +86,123 @@ If `yt-dlp` isn't installed, it falls back to YouTube's oEmbed API for basic met
 npx skills add JimmySadek/youtube-fetcher-to-markdown
 ```
 
-Or clone manually:
+Or clone the canonical repository:
 
 ```bash
-git clone https://github.com/JimmySadek/youtube-fetcher-to-markdown.git ~/.config/skillshare/skills/youtube-fetcher
+git clone https://github.com/JimmySadek/youtube-fetcher-to-markdown.git
 ```
 
-### Install dependencies
+### Install runtime dependencies
+
+Python 3.8 or newer is supported.
 
 ```bash
-pip install youtube-transcript-api requests
-brew install yt-dlp  # macOS — or: pip install yt-dlp
+python3 -m pip install -r requirements.txt
 ```
 
-`yt-dlp` is optional but recommended. Without it, you still get the transcript but lose the video description, chapters, and duration.
-
-### Verify
+`yt-dlp` is optional but recommended for descriptions, chapters, duration, and
+upload dates:
 
 ```bash
-python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py --check-deps
+brew install yt-dlp              # macOS
+# or: python3 -m pip install yt-dlp
 ```
+
+Check dependencies without fetching a video:
+
+```bash
+python3 scripts/fetch_transcript.py --check-deps
+```
+
+The script reports missing packages but never installs them automatically.
 
 ## Usage
 
-Easiest way — just tell Claude:
+```bash
+python3 scripts/fetch_transcript.py "https://youtu.be/VIDEO_ID"
+```
 
-> "Get me the transcript for https://youtu.be/hSTy_BInQs8"
+An agent using the skill resolves `scripts/fetch_transcript.py` relative to its
+installed `SKILL.md`; it does not depend on one fixed home-directory path.
 
-Claude runs the skill, saves the file, and tells you where it went. That's it.
+### Output location
 
-### Running it manually
+The first configured option wins:
+
+1. `--output` for one exact file
+2. `--output-dir` for this run
+3. `YOUTUBE_FETCHER_DIR` for a persistent directory
+4. `~/yt_transcripts/` by default
 
 ```bash
-python3 ~/.config/skillshare/skills/youtube-fetcher/scripts/fetch_transcript.py "https://youtu.be/VIDEO_ID"
+# Save this note to an Obsidian vault
+python3 scripts/fetch_transcript.py URL --output-dir ~/Notes/MyVault
+
+# Set a persistent default
+export YOUTUBE_FETCHER_DIR=~/Notes/MyVault
+python3 scripts/fetch_transcript.py URL
+
+# Save to one exact file
+python3 scripts/fetch_transcript.py URL --output ~/Notes/video.md
 ```
+
+Duplicate detection uses the resolved output directory. In a non-interactive
+session, an existing note exits with code `3` and remains untouched. Run again
+with `--force` only after deciding to overwrite.
 
 ### Options
 
 | Flag | What it does |
 |------|-------------|
-| `--timestamps` / `-t` | Add `[MM:SS]` timestamps to each line of the transcript |
-| `--lang` / `-l` | Fetch captions in a specific language (default: `en`) |
-| `--source` / `-s` | Override the source project name in metadata |
-| `--output` / `-o` | Save to a custom file path instead of `~/yt_transcripts/` |
-| `--format` / `-f` | Output as `json` or `srt` instead of Markdown |
-| `--force` | Skip duplicate check, always re-fetch |
-| `--no-description` | Skip the video description section |
-| `--stdout` | Print to terminal instead of saving to a file |
-| `--list` | Show available transcript languages for a video |
-| `--check-deps` | Check that all dependencies are installed |
+| `--output` / `-o` | Save to one exact file |
+| `--output-dir` | Save inside a directory or knowledge vault |
+| `--timestamps` / `-t` | Add timestamps to transcript lines |
+| `--lang` / `-l` | Request a caption language; falls back truthfully to English |
+| `--source` / `-s` | Override the capture-project name |
+| `--format` / `-f` | Export `json` or `srt` instead of Markdown |
+| `--no-description` | Skip the description and chapters section |
+| `--stdout` | Print the result instead of saving it |
+| `--list` | Show available caption languages |
+| `--force` | Bypass duplicate protection |
+| `--check-deps` | Report dependency status |
 
-### Examples
+### Supported YouTube inputs
 
-```bash
-# Transcript with timestamps
-python3 .../fetch_transcript.py "https://youtu.be/hSTy_BInQs8" --timestamps
+- Standard watch URLs, regardless of query-parameter order
+- `youtu.be` short links
+- `/embed/`, `/shorts/`, `/live/`, and legacy `/v/` links
+- Mobile and YouTube Music watch URLs
+- Privacy-enhanced `youtube-nocookie.com/embed/` links
+- A raw 11-character video ID
 
-# Fetch Spanish captions
-python3 .../fetch_transcript.py "https://youtu.be/hSTy_BInQs8" --lang es
-
-# Export as SRT subtitle file
-python3 .../fetch_transcript.py "https://youtu.be/hSTy_BInQs8" --format srt
-
-# Re-fetch a video you've already transcribed
-python3 .../fetch_transcript.py "https://youtu.be/hSTy_BInQs8" --force
-```
+Lookalike hosts such as `youtube.com.example.org` are rejected.
 
 ## Compatibility
 
-Works with any agent that supports the SKILL.md format:
+The repository follows the portable `SKILL.md` format. The same install command
+works with Codex, Claude Code, Cursor, Windsurf, Gemini CLI, and other compatible
+agents. Manual users can run the Python script directly.
 
-| Agent | Install |
-|-------|---------|
-| Claude Code | `npx skills add JimmySadek/youtube-fetcher-to-markdown` |
-| Cursor, Windsurf, Gemini CLI, Codex | Same command |
-| Any other agent | Clone the repo, point your agent at `SKILL.md` |
+## Capabilities and limitations
 
-## Requirements
-
-| Dependency | Required? | What it does |
-|-----------|-----------|-------------|
-| Python 3.8+ | Yes | Runs the script |
-| `youtube-transcript-api` | Yes | Pulls captions from YouTube |
-| `requests` | Yes | Fallback metadata via YouTube's oEmbed API |
-| `yt-dlp` | Recommended | Gets video description, chapters, and duration |
-
-## Limitations
-
-- Only works on videos that have captions (manual or auto-generated). For videos with no captions at all, use [Whisper](https://github.com/openai/whisper).
-- Some uploaders disable captions on their videos.
-- Private or age-restricted videos may not be accessible.
+- **Network:** contacts YouTube captions and oEmbed; optionally invokes `yt-dlp`
+  for richer metadata.
+- **Filesystem:** reads Markdown frontmatter in the selected directory to detect
+  duplicates and writes only the requested Markdown, JSON, or SRT output.
+- **Subprocess:** uses the locally installed `yt-dlp` executable when available.
+- Videos must expose captions. Private, restricted, or caption-disabled videos
+  may fail.
+- It does not download video, run Whisper, identify speakers, or translate text.
 
 <details>
-<summary>Exit codes (for debugging)</summary>
+<summary>Exit codes</summary>
 
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | Runtime error (fetch failed, invalid URL) |
-| `2` | Missing required dependencies |
-| `3` | Duplicate skipped (video already transcribed) |
+| `1` | Invalid input or fetch failure |
+| `2` | Missing required dependency |
+| `3` | Existing note preserved; overwrite not approved |
 
 </details>
 

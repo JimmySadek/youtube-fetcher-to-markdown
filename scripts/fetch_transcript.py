@@ -11,15 +11,19 @@ Exit codes:
     3 - Duplicate skipped (video already transcribed, user declined re-fetch)
 """
 
+from __future__ import annotations
+
 import argparse
 import importlib
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 # ── Exit codes ──────────────────────────────────────────────────────────────
 EXIT_SUCCESS = 0
@@ -27,7 +31,18 @@ EXIT_ERROR = 1
 EXIT_MISSING_DEPS = 2
 EXIT_DUPLICATE_SKIPPED = 3
 
-TRANSCRIPTS_DIR = Path.home() / "yt_transcripts"
+DEFAULT_OUTPUT_DIRNAME = "yt_transcripts"
+OUTPUT_DIR_ENV = "YOUTUBE_FETCHER_DIR"
+VIDEO_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{11}$")
+YOUTUBE_HOSTS = {
+    "youtube.com",
+    "www.youtube.com",
+    "m.youtube.com",
+    "music.youtube.com",
+    "youtube-nocookie.com",
+    "www.youtube-nocookie.com",
+}
+SHORT_YOUTUBE_HOSTS = {"youtu.be", "www.youtu.be"}
 
 
 # ── Dependency checks ──────────────────────────────────────────────────────
@@ -40,32 +55,36 @@ def check_dependencies() -> list[dict]:
         {
             "module": "youtube_transcript_api",
             "name": "youtube-transcript-api",
-            "install": "pip install youtube-transcript-api",
+            "install": "python3 -m pip install youtube-transcript-api",
         },
         {
             "module": "requests",
             "name": "requests",
-            "install": "pip install requests",
+            "install": "python3 -m pip install requests",
         },
     ]
     for dep in python_deps:
         try:
             importlib.import_module(dep["module"])
         except ImportError:
-            missing.append({
-                "name": dep["name"],
-                "type": "python",
-                "install": dep["install"],
-            })
+            missing.append(
+                {
+                    "name": dep["name"],
+                    "type": "python",
+                    "install": dep["install"],
+                }
+            )
 
     # System binaries
     if not shutil.which("yt-dlp"):
-        missing.append({
-            "name": "yt-dlp",
-            "type": "system",
-            "install": "brew install yt-dlp  # or: pip install yt-dlp",
-            "optional": True,
-        })
+        missing.append(
+            {
+                "name": "yt-dlp",
+                "type": "system",
+                "install": "brew install yt-dlp  # or: python3 -m pip install yt-dlp",
+                "optional": True,
+            }
+        )
 
     return missing
 
@@ -85,7 +104,7 @@ def print_dependency_report(missing: list[dict]) -> None:
         print("  ── Quick install all ──", file=sys.stderr)
         installs = " ".join(d["name"] for d in required if d["type"] == "python")
         if installs:
-            print(f"  pip install {installs}\n", file=sys.stderr)
+            print(f"  python3 -m pip install {installs}\n", file=sys.stderr)
 
     if optional:
         label = "\n" if required else ""
@@ -93,27 +112,30 @@ def print_dependency_report(missing: list[dict]) -> None:
         for dep in optional:
             print(f"    ○ {dep['name']} — {dep['install']}", file=sys.stderr)
             if dep["name"] == "yt-dlp":
-                print("      (Without yt-dlp: no video description, chapters, or duration)\n", file=sys.stderr)
+                print(
+                    "      (Without yt-dlp: no video description, chapters, or duration)\n",
+                    file=sys.stderr,
+                )
 
 
 # ── Duplicate detection ────────────────────────────────────────────────────
-def find_existing_transcript(video_id: str) -> Path | None:
+def find_existing_transcript(video_id: str, transcripts_dir: Path) -> Path | None:
     """Find an existing transcript for this video_id.
 
-    Fast path: glob for *_[VIDEO_ID].md in the filename (O(1)).
+    Fast path: match *_[VIDEO_ID].md filenames without reading file contents.
     Fallback: scan file contents for backwards compatibility with older files.
     """
-    if not TRANSCRIPTS_DIR.exists():
+    if not transcripts_dir.exists():
         return None
 
     # Fast path: video_id encoded in filename
-    # Escape brackets — glob() treats [] as character classes
-    matches = list(TRANSCRIPTS_DIR.glob(f"*_\\[{video_id}\\].md"))
+    # Match literal brackets — glob() treats [] as character classes.
+    matches = list(transcripts_dir.glob(f"*_[[]{video_id}[]].md"))
     if matches:
         return matches[0]
 
     # Fallback: scan frontmatter for older files without ID in filename
-    for md_file in TRANSCRIPTS_DIR.glob("*.md"):
+    for md_file in transcripts_dir.glob("*.md"):
         try:
             # Read only the first 512 bytes — frontmatter is at the top
             with md_file.open(encoding="utf-8", errors="ignore") as f:
@@ -139,22 +161,63 @@ def get_existing_transcript_date(filepath: Path) -> str:
 
 # ── Core helpers ───────────────────────────────────────────────────────────
 def extract_video_id(url_or_id: str) -> str:
-    """Extract video ID from a YouTube URL or return as-is if already an ID."""
-    patterns = [
-        r"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})",
-        r"^([a-zA-Z0-9_-]{11})$",
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, url_or_id)
-        if match:
-            return match.group(1)
-    print(f"Error: Could not extract video ID from '{url_or_id}'", file=sys.stderr)
-    sys.exit(EXIT_ERROR)
+    """Extract a video ID from supported YouTube URLs or a raw ID.
+
+    Hostnames are allow-listed so lookalike domains such as
+    ``youtube.com.example.org`` are rejected.
+    """
+    candidate = url_or_id.strip()
+    if VIDEO_ID_PATTERN.fullmatch(candidate):
+        return candidate
+
+    parsed = urlparse(candidate)
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise ValueError(f"Could not extract a YouTube video ID from '{url_or_id}'")
+
+    host = parsed.hostname.lower().rstrip(".")
+    path_parts = [part for part in parsed.path.split("/") if part]
+    video_id = None
+
+    if host in SHORT_YOUTUBE_HOSTS and path_parts:
+        video_id = path_parts[0]
+    elif host in YOUTUBE_HOSTS:
+        if parsed.path.rstrip("/") == "/watch":
+            values = parse_qs(parsed.query).get("v", [])
+            video_id = values[0] if values else None
+        elif len(path_parts) >= 2 and path_parts[0].lower() in {
+            "embed",
+            "live",
+            "shorts",
+            "v",
+        }:
+            video_id = path_parts[1]
+
+    if video_id and VIDEO_ID_PATTERN.fullmatch(video_id):
+        return video_id
+    raise ValueError(f"Could not extract a YouTube video ID from '{url_or_id}'")
 
 
-def yaml_escape(text: str) -> str:
-    """Escape a string for safe inclusion in double-quoted YAML values."""
-    return text.replace("\\", "\\\\").replace('"', '\\"')
+def resolve_output_directory(
+    output: str | None,
+    output_dir: str | None,
+    environ: dict[str, str] | None = None,
+) -> Path:
+    """Resolve output directory using file, flag, environment, then default."""
+    if output:
+        return Path(output).expanduser().parent
+    if output_dir:
+        return Path(output_dir).expanduser()
+
+    env = os.environ if environ is None else environ
+    env_dir = env.get(OUTPUT_DIR_ENV, "").strip()
+    if env_dir:
+        return Path(env_dir).expanduser()
+    return Path.home() / DEFAULT_OUTPUT_DIRNAME
+
+
+def yaml_quote(value) -> str:
+    """Return a JSON-compatible double-quoted YAML scalar."""
+    return json.dumps(str(value), ensure_ascii=False)
 
 
 def slugify(text: str) -> str:
@@ -168,6 +231,7 @@ def slugify(text: str) -> str:
 
 def format_duration(seconds: int) -> str:
     """Convert seconds to human-readable duration."""
+    seconds = int(seconds or 0)
     h = seconds // 3600
     m = (seconds % 3600) // 60
     s = seconds % 60
@@ -185,7 +249,9 @@ def fetch_video_metadata(video_id: str) -> dict:
     try:
         result = subprocess.run(
             ["yt-dlp", "--skip-download", "--dump-json", "--no-warnings", url],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode != 0:
             print("Warning: yt-dlp failed, falling back to oEmbed", file=sys.stderr)
@@ -193,10 +259,10 @@ def fetch_video_metadata(video_id: str) -> dict:
 
         data = json.loads(result.stdout)
         return {
-            "title": data.get("title", "Untitled"),
-            "channel": data.get("channel", data.get("uploader", "Unknown")),
-            "description": data.get("description", ""),
-            "duration": data.get("duration", 0),
+            "title": data.get("title") or "Untitled",
+            "channel": data.get("channel") or data.get("uploader") or "Unknown",
+            "description": data.get("description") or "",
+            "duration": int(data.get("duration") or 0),
             "upload_date": _format_upload_date(data.get("upload_date", "")),
             "chapters": data.get("chapters") or [],
         }
@@ -208,14 +274,15 @@ def fetch_video_metadata(video_id: str) -> dict:
 def _fetch_metadata_oembed(video_id: str) -> dict:
     """Fallback: fetch basic metadata via YouTube oEmbed API."""
     import requests
+
     url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json"
     try:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         return {
-            "title": data.get("title", "Untitled"),
-            "channel": data.get("author_name", "Unknown"),
+            "title": data.get("title") or "Untitled",
+            "channel": data.get("author_name") or "Unknown",
             "description": "",
             "duration": 0,
             "upload_date": "",
@@ -223,9 +290,12 @@ def _fetch_metadata_oembed(video_id: str) -> dict:
         }
     except Exception:
         return {
-            "title": "Untitled", "channel": "Unknown",
-            "description": "", "duration": 0,
-            "upload_date": "", "chapters": [],
+            "title": "Untitled",
+            "channel": "Unknown",
+            "description": "",
+            "duration": 0,
+            "upload_date": "",
+            "chapters": [],
         }
 
 
@@ -236,21 +306,28 @@ def _format_upload_date(raw: str) -> str:
     return raw
 
 
-def detect_caption_type(transcript_list, lang: str) -> str:
-    """Detect whether the fetched transcript is manual or auto-generated.
+def select_transcript(transcript_list, requested_language: str):
+    """Select captions and report the actual language and caption type."""
+    requested_languages = [requested_language]
+    if requested_language.lower() != "en":
+        requested_languages.append("en")
 
-    Accepts a pre-fetched transcript list to avoid a redundant API call.
-    """
-    try:
-        for t in transcript_list:
-            if t.language_code == lang or t.language_code.startswith(lang):
-                return "auto-generated" if t.is_generated else "manual"
-        for t in transcript_list:
-            if t.language_code.startswith("en"):
-                return "auto-generated" if t.is_generated else "manual"
-    except Exception:
-        pass
-    return "unknown"
+    selected = transcript_list.find_transcript(requested_languages)
+    actual_language = selected.language_code
+    requested_lower = requested_language.lower()
+    actual_lower = actual_language.lower()
+    if not (
+        actual_lower == requested_lower
+        or actual_lower.startswith(f"{requested_lower}-")
+    ):
+        print(
+            f"Warning: requested captions '{requested_language}' were unavailable; "
+            f"using '{actual_language}' instead.",
+            file=sys.stderr,
+        )
+
+    caption_type = "auto-generated" if selected.is_generated else "manual"
+    return selected, actual_language, caption_type
 
 
 def format_timestamp(seconds: float) -> str:
@@ -264,8 +341,13 @@ def format_timestamp(seconds: float) -> str:
 
 
 def sanitize_table_value(text: str) -> str:
-    """Escape pipe characters in text destined for a Markdown table cell."""
-    return text.replace("|", "\\|")
+    """Keep dynamic text inside one Markdown table cell."""
+    return sanitize_inline_text(text).replace("|", "\\|")
+
+
+def sanitize_inline_text(text) -> str:
+    """Collapse dynamic text to one readable Markdown line."""
+    return " ".join(str(text).replace("\x00", "").splitlines()).strip()
 
 
 def build_description_section(description: str, chapters: list) -> str:
@@ -277,14 +359,19 @@ def build_description_section(description: str, chapters: list) -> str:
 
     if description:
         # Prevent stray --- lines from being parsed as frontmatter/thematic breaks
-        safe_desc = re.sub(r"^-{3,}$", "\\---", description, flags=re.MULTILINE)
+        safe_desc = re.sub(
+            r"^-{3,}$",
+            "\\---",
+            str(description).replace("\x00", ""),
+            flags=re.MULTILINE,
+        )
         parts.append(safe_desc)
 
     if chapters:
         parts.append("\n### Chapters\n")
         for ch in chapters:
             ts = format_timestamp(ch.get("start_time", 0))
-            title = ch.get("title", "")
+            title = sanitize_inline_text(ch.get("title", ""))
             parts.append(f"- `{ts}` {title}")
 
     return "\n".join(parts)
@@ -306,38 +393,41 @@ def build_markdown(
     """Build the full Markdown file content with frontmatter and transcript."""
     video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-    # Escape user-supplied values for safe YAML frontmatter
-    safe_title = yaml_escape(title)
-    safe_channel = yaml_escape(channel)
+    safe_heading = sanitize_inline_text(title) or "Untitled"
+    safe_title = yaml_quote(title)
+    safe_channel = yaml_quote(channel)
+    safe_source = yaml_quote(source_project)
+    safe_language = yaml_quote(language)
+    safe_caption_type = yaml_quote(caption_type)
 
     # Build optional frontmatter fields
     extra_frontmatter = ""
     if duration:
-        extra_frontmatter += f'\nduration: "{format_duration(duration)}"'
+        extra_frontmatter += f"\nduration: {yaml_quote(format_duration(duration))}"
     if upload_date:
-        extra_frontmatter += f'\nupload_date: "{upload_date}"'
+        extra_frontmatter += f"\nupload_date: {yaml_quote(upload_date)}"
 
     # Build optional table rows
     extra_rows = ""
     if duration:
         extra_rows += f"\n| Duration | {format_duration(duration)} |"
     if upload_date:
-        extra_rows += f"\n| Uploaded | {upload_date} |"
+        extra_rows += f"\n| Uploaded | {sanitize_table_value(upload_date)} |"
 
     return f"""---
-title: "{safe_title}"
-channel: "{safe_channel}"
-url: "{video_url}"
-video_id: "{video_id}"
-fetched: "{fetched_date}"
-source_project: "{yaml_escape(source_project)}"
-language: "{language}"
-caption_type: "{caption_type}"{extra_frontmatter}
+title: {safe_title}
+channel: {safe_channel}
+url: {yaml_quote(video_url)}
+video_id: {yaml_quote(video_id)}
+fetched: {yaml_quote(fetched_date)}
+source_project: {safe_source}
+language: {safe_language}
+caption_type: {safe_caption_type}{extra_frontmatter}
 tags:
   - yt-transcript
 ---
 
-# {title}
+# {safe_heading}
 
 ## Video Details
 
@@ -347,7 +437,7 @@ tags:
 | Channel  | {sanitize_table_value(channel)} |{extra_rows}
 | Fetched  | {fetched_date} |
 | Source   | {sanitize_table_value(source_project)} |
-| Language | {language} ({caption_type}) |
+| Language | {sanitize_table_value(f"{language} ({caption_type})")} |
 {description_section}
 
 ## Transcript
@@ -363,16 +453,51 @@ def main():
         epilog="Exit codes: 0=success, 1=error, 2=missing deps, 3=duplicate skipped",
     )
     parser.add_argument("video", nargs="?", help="YouTube URL or video ID")
-    parser.add_argument("--output", "-o", help="Custom output path (overrides ~/yt_transcripts/)")
-    parser.add_argument("--timestamps", "-t", action="store_true", help="Include timestamps in transcript")
-    parser.add_argument("--lang", "-l", default="en", help="Language code (default: en)")
-    parser.add_argument("--format", "-f", dest="fmt", choices=["text", "json", "srt"], default="text", help="Output format (text=Markdown, json/srt=raw)")
-    parser.add_argument("--list", action="store_true", help="List available transcripts")
-    parser.add_argument("--source", "-s", default=None, help="Source project name (defaults to cwd name)")
-    parser.add_argument("--stdout", action="store_true", help="Print to stdout instead of saving")
-    parser.add_argument("--no-description", action="store_true", help="Skip video description")
-    parser.add_argument("--force", action="store_true", help="Skip duplicate check, always re-fetch")
-    parser.add_argument("--check-deps", action="store_true", help="Check dependencies and exit")
+    parser.add_argument(
+        "--output", "-o", help="Custom output file path (highest precedence)"
+    )
+    parser.add_argument(
+        "--output-dir",
+        help=f"Output directory (overrides ${OUTPUT_DIR_ENV} and ~/{DEFAULT_OUTPUT_DIRNAME}/)",
+    )
+    parser.add_argument(
+        "--timestamps",
+        "-t",
+        action="store_true",
+        help="Include timestamps in transcript",
+    )
+    parser.add_argument(
+        "--lang", "-l", default="en", help="Language code (default: en)"
+    )
+    parser.add_argument(
+        "--format",
+        "-f",
+        dest="fmt",
+        choices=["text", "json", "srt"],
+        default="text",
+        help="Output format (text=Markdown, json/srt=raw)",
+    )
+    parser.add_argument(
+        "--list", action="store_true", help="List available transcripts"
+    )
+    parser.add_argument(
+        "--source",
+        "-s",
+        default=None,
+        help="Source project name (defaults to cwd name)",
+    )
+    parser.add_argument(
+        "--stdout", action="store_true", help="Print to stdout instead of saving"
+    )
+    parser.add_argument(
+        "--no-description", action="store_true", help="Skip video description"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Skip duplicate check, always re-fetch"
+    )
+    parser.add_argument(
+        "--check-deps", action="store_true", help="Check dependencies and exit"
+    )
     args = parser.parse_args()
 
     # ── Dependency check ────────────────────────────────────────────────
@@ -402,7 +527,11 @@ def main():
     if not args.video:
         parser.error("the following arguments are required: video")
 
-    video_id = extract_video_id(args.video)
+    try:
+        video_id = extract_video_id(args.video)
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
     ytt_api = YouTubeTranscriptApi()
 
     # ── Fetch transcript list once (reused for list, fetch, and caption detection)
@@ -419,9 +548,11 @@ def main():
             print(f"  [{t.language_code}] {t.language} ({kind})")
         sys.exit(EXIT_SUCCESS)
 
+    resolved_output_dir = resolve_output_directory(args.output, args.output_dir)
+
     # ── Duplicate check ─────────────────────────────────────────────────
     if not args.force and not args.stdout and args.fmt == "text":
-        existing = find_existing_transcript(video_id)
+        existing = find_existing_transcript(video_id, resolved_output_dir)
         if existing:
             fetched_on = get_existing_transcript_date(existing)
             print(f"\n  ⚠ This video was already transcribed on {fetched_on}")
@@ -429,7 +560,9 @@ def main():
 
             if not sys.stdin.isatty():
                 # Non-interactive context (e.g., Claude, scripts, pipes)
-                print("  Skipped (duplicate). Use --force to re-fetch.", file=sys.stderr)
+                print(
+                    "  Skipped (duplicate). Use --force to re-fetch.", file=sys.stderr
+                )
                 sys.exit(EXIT_DUPLICATE_SKIPPED)
 
             try:
@@ -444,7 +577,10 @@ def main():
 
     # ── Fetch transcript using pre-fetched list ────────────────────────
     try:
-        transcript = transcript_list.find_transcript([args.lang, "en"]).fetch()
+        selected_transcript, actual_language, caption_type = select_transcript(
+            transcript_list, args.lang
+        )
+        transcript = selected_transcript.fetch()
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(EXIT_ERROR)
@@ -456,9 +592,13 @@ def main():
         if args.stdout:
             print(output)
         else:
-            out_path = args.output or str(TRANSCRIPTS_DIR / f"{video_id}.json")
-            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-            Path(out_path).write_text(output, encoding="utf-8")
+            out_path = (
+                Path(args.output).expanduser()
+                if args.output
+                else resolved_output_dir / f"{video_id}.json"
+            )
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(output, encoding="utf-8")
             print(f"Saved to {out_path}")
         sys.exit(EXIT_SUCCESS)
 
@@ -468,9 +608,13 @@ def main():
         if args.stdout:
             print(output)
         else:
-            out_path = args.output or str(TRANSCRIPTS_DIR / f"{video_id}.srt")
-            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-            Path(out_path).write_text(output, encoding="utf-8")
+            out_path = (
+                Path(args.output).expanduser()
+                if args.output
+                else resolved_output_dir / f"{video_id}.srt"
+            )
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(output, encoding="utf-8")
             print(f"Saved to {out_path}")
         sys.exit(EXIT_SUCCESS)
 
@@ -488,7 +632,6 @@ def main():
     metadata = fetch_video_metadata(video_id)
     today = date.today().isoformat()
     source_project = args.source or Path.cwd().name
-    caption_type = detect_caption_type(transcript_list, args.lang)
 
     # ── Build description section ───────────────────────────────────────
     description_section = ""
@@ -504,7 +647,7 @@ def main():
         video_id=video_id,
         fetched_date=today,
         source_project=source_project,
-        language=args.lang,
+        language=actual_language,
         caption_type=caption_type,
         description_section=description_section,
         transcript_text=transcript_text,
@@ -518,11 +661,10 @@ def main():
 
     # ── Save to file ────────────────────────────────────────────────────
     if args.output:
-        out_path = Path(args.output)
+        out_path = Path(args.output).expanduser()
     else:
         filename = f"{today}_{slugify(metadata['title'])}_[{video_id}].md"
-        TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
-        out_path = TRANSCRIPTS_DIR / filename
+        out_path = resolved_output_dir / filename
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(md_content, encoding="utf-8")
