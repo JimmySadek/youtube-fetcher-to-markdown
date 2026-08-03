@@ -107,7 +107,7 @@
         <dt>Agent</dt><dd>Codex</dd>
         <dt>Session</dt><dd>Current Codex desktop planning task</dd>
         <dt>Back references</dt><dd><a href="../README.md">README</a>, <a href="../SKILL.md">skill contract</a>, <a href="../scripts/fetch_transcript.py">runtime script</a>, <a href="https://skills.sh/jimmysadek/youtube-fetcher-to-markdown/youtube-fetcher">skills.sh listing</a>, <a href="https://codeguilds.dev/packages/youtube-fetcher-to-markdown">CodeGuilds listing</a></dd>
-        <dt>Forward references</dt><dd>Future build commits, release URL, external issue and submission URLs will be appended only after their separate approvals.</dd>
+        <dt>Forward references</dt><dd>The release and CodeGuilds issue URLs are recorded below. Future directory submission URLs will be appended only after their separate approvals.</dd>
       </dl>
     </details>
   </header>
@@ -137,12 +137,12 @@
       </div>
       <article class="summary-panel summary-caution" data-summary-item="important-constraint">
         <h3>⚠️ Important approval or constraint</h3>
-        <p>The approved local implementation is complete. GitHub publication, the branch migration, CodeGuilds changes or bug reports, and each external submission remain separate decisions. Existing untracked workspace folders must be preserved and kept outside the release.</p>
+        <p>The v1.1 release and safe branch migration are complete. The claimed CodeGuilds page is current, but its installer cannot yet copy a complete multi-file skill, so its badge remains withheld. Existing untracked workspace folders remain protected and outside the release.</p>
       </article>
     </div>
     <div class="summary-close">
       <p><strong>🏁 Finished means:</strong> <span data-summary-item="finished-means">A clean v1.1 release can be installed and used successfully in isolation, the repository and CodeGuilds images resolve through main, its claims match observed behavior, CodeGuilds is advertised only if its installer works, and every approved directory submission is traceable without creating a second source of truth.</span></p>
-      <p><strong>➡️ Next decision:</strong> <span data-summary-item="next-decision">Review the verified local release candidate, then separately approve or decline the remote branch migration and publication.</span></p>
+      <p><strong>➡️ Next decision:</strong> <span data-summary-item="next-decision">Review the published v1.1 closeout, then decide whether to contribute an upstream CodeGuilds installer repair before beginning selective directory submissions.</span></p>
     </div>
   </section>
 
@@ -170,11 +170,11 @@
   HARDEN["v1.1 correctness<br/>and portability"]:::proposed
   PROOF["Automated tests · isolated install<br/>live transcript smoke"]:::validation
   GATE{"Release candidate passes<br/>all acceptance checks"}:::decision
-  MIGRATE["Controlled branch migration<br/>master → main"]:::validation
-  RELEASE["Publish v1.1 on main<br/>after remote approval"]:::success
-  CODEGUILDS{"CodeGuilds install<br/>works in isolation"}:::external
+  MIGRATE["Migrated safely<br/>main + legacy mirror"]:::validation
+  RELEASE["v1.1.0 published<br/>verified release"]:::success
+  CODEGUILDS{"CodeGuilds listing refreshed<br/>installer bundle complete?"}:::external
   BADGE["Update claimed listing<br/>and add verified badge"]:::success
-  HOLD["Keep listing<br/>withhold badge"]:::risk
+  HOLD["Keep listing<br/>badge withheld · upstream issues"]:::risk
   SUBMIT["Selective submissions<br/>VoltAgent · Travis · hesreallyhim when open"]:::external
   MEASURE["Weekly 14-day snapshots<br/>visits · clones · stars · installs"]:::validation
 
@@ -248,6 +248,7 @@
       <li><code>requirements.txt</code> — supported dependency ranges for the required Python packages.</li>
       <li><code>agents/openai.yaml</code> — Codex-facing display name, short description, and default prompt generated from the final skill contract.</li>
       <li><code>.github/workflows/ci.yml</code> — syntax, unit, skill, and supported-Python checks on pushes and pull requests.</li>
+      <li><code>.github/workflows/sync-legacy-master.yml</code> — fast-forwards the legacy <code>master</code> compatibility branch after every push to canonical <code>main</code>, preserving old raw links without creating a second source of truth.</li>
       <li><code>.scripts/verify-isolated-install.sh</code> — release helper that uses temporary home and npm-cache paths and proves the installed bundle contains the runtime script.</li>
     </ul>
   </section>
@@ -345,20 +346,20 @@
     </div>
 
     <div class="phase">
-      <h3><code class="status">[]</code> Phase 5: Migrate to <code>main</code> and publish v1.1 only after the remote-action gate</h3>
+      <h3><code class="status">[x]</code> Phase 5: Migrate to <code>main</code> and publish v1.1 only after the remote-action gate</h3>
       <p>Publication and the default-branch migration are remote changes under one explicit approval gate. Rename the synchronized baseline first, update and verify local tracking, then publish the reviewed v1.1 work against <code>main</code>.</p>
       <ul>
-        <li><code class="status">[]</code> Immediately before the rename, re-check tracked branch references, open pull requests, releases, branch protection, rulesets, Pages, workflows, GitHub code search, and the registered Claude worktree.</li>
-        <li><code class="status">[]</code> After exact remote approval, rename GitHub's default branch from <code>master</code> to <code>main</code>; do not keep an unsynchronized compatibility branch.</li>
-        <li><code class="status">[]</code> Update the local clone with GitHub's documented branch-rename sequence: rename the local branch, fetch, track <code>origin/main</code>, and refresh <code>origin/HEAD</code>. Confirm the separate Claude worktree and its branch are unchanged.</li>
-        <li><code class="status">[]</code> Prove the raw <code>main</code> README and banner URLs return successfully, the CodeGuilds image resolves, and an isolated <code>npx skills</code> install remains complete.</li>
-        <li><code class="status">[]</code> Confirm the target commit and release notes agree with the verified candidate.</li>
-        <li><code class="status">[]</code> Push and open or update the review surface against <code>main</code> only after exact approval.</li>
-        <li><code class="status">[]</code> Tag and release only the merged, verified commit.</li>
-        <li><code class="status">[]</code> Re-run the public <code>npx skills</code> install from the released ref in isolation.</li>
+        <li><code class="status">[x]</code> Immediately before the rename, re-checked tracked branch references, open pull requests, releases, branch protection, rulesets, Pages, workflows, GitHub code search, and the registered Claude worktree; no conflicting dependency was found.</li>
+        <li><code class="status">[x]</code> Renamed GitHub's default branch from <code>master</code> to <code>main</code>, then restored <code>master</code> at the same commit as a synchronized compatibility endpoint because CodeGuilds still used one raw legacy URL.</li>
+        <li><code class="status">[x]</code> Renamed the local baseline branch to <code>main</code>, tracked <code>origin/main</code>, and refreshed <code>origin/HEAD</code>. The separate Claude worktree remains at <code>d07e035</code> with its untracked <code>awesome-claude-code/</code> folder intact.</li>
+        <li><code class="status">[x]</code> Raw <code>main</code> and compatibility <code>master</code> README and banner URLs return HTTP 200; the live CodeGuilds banner loaded at 1536 × 1024.</li>
+        <li><code class="status">[x]</code> Pull request <a href="https://github.com/JimmySadek/youtube-fetcher-to-markdown/pull/2">#2</a> merged cleanly at <code>57ae480</code> after Python 3.8 and 3.13 checks passed.</li>
+        <li><code class="status">[x]</code> Post-merge CI run <a href="https://github.com/JimmySadek/youtube-fetcher-to-markdown/actions/runs/30777209683">30777209683</a> and legacy-sync run <a href="https://github.com/JimmySadek/youtube-fetcher-to-markdown/actions/runs/30777209697">30777209697</a> passed; <code>origin/main</code> and <code>origin/master</code> matched.</li>
+        <li><code class="status">[x]</code> Annotated tag <code>v1.1.0</code> and the <a href="https://github.com/JimmySadek/youtube-fetcher-to-markdown/releases/tag/v1.1.0">GitHub Release</a> point to merged commit <code>57ae480</code>.</li>
+        <li><code class="status">[x]</code> A fresh public-tag clone passed Skills CLI 1.5.21 bundle installation and a live 45,708-byte, 1,200-line transcript smoke with truthful <code>zz</code> to <code>en</code> fallback.</li>
       </ul>
       <h4>Testing strategy</h4>
-      <ul><li><code class="status">[]</code> Default-branch API state, local upstream and remote HEAD, worktree inventory, raw asset requests, CodeGuilds page check, GitHub release, tag ancestry, CI, and isolated released install — proves the migration and public artifact agree.</li></ul>
+      <ul><li><code class="status">[x]</code> Default-branch API state, local upstream and remote HEAD, worktree inventory, raw asset requests, CodeGuilds page check, GitHub release, tag ancestry, CI, and isolated released install all prove the migration and public artifact agree.</li></ul>
       <div class="loop">🔁 Stop and rename back before publication if local tracking, a registered worktree, raw <code>main</code> assets, CodeGuilds rendering, or the public installer fails. Stop publication if the tag, release notes, default branch, or installer points to a different artifact.</div>
     </div>
 
@@ -366,14 +367,15 @@
       <h3><code class="status">[]</code> Phase 6: Repair and verify CodeGuilds as an independent channel</h3>
       <p>CodeGuilds work needs its own external-action approval and may proceed in parallel with directory research after v1.1 is public.</p>
       <ul>
-        <li><code class="status">[]</code> With approval, report the published CLI packaging failure to <code>xdevsapps/codeguilds-cli</code> with the isolated stack trace and no speculation beyond the observed relative path.</li>
-        <li><code class="status">[]</code> Confirm that the branch migration repaired the imported <code>main</code>-branch banner and README URLs; report a CodeGuilds importer bug only if rendering still fails.</li>
-        <li><code class="status">[]</code> Correct the clipped tagline and update the claimed listing to the released v1.1 promise.</li>
-        <li><code class="status">[]</code> Re-test <code>codeguilds info</code> and <code>codeguilds install --project</code> inside isolated home, cache, and project directories.</li>
+        <li><code class="status">[x]</code> Reported the published npm CLI package-path failure as <a href="https://github.com/xdevsapps/codeguilds-cli/issues/1">codeguilds-cli #1</a> with the isolated stack trace and verified one-line source correction.</li>
+        <li><code class="status">[x]</code> Confirmed the branch migration and compatibility mirror repaired both imported raw URLs; the public banner renders successfully.</li>
+        <li><code class="status">[x]</code> Corrected the clipped tagline, refreshed the claimed listing to the released v1.1 README, published its v1.1.0 version record, and set the truthful <code>npx skills</code> install command.</li>
+        <li><code class="status">[x]</code> Re-tested <code>codeguilds info</code> and <code>codeguilds install --project</code> inside disposable home and project directories. The registry reports v1.1.0, but installation falsely succeeds after copying only the README to one global command file.</li>
+        <li><code class="status">[x]</code> Reported the incomplete multi-file skill behavior and ignored project scope as <a href="https://github.com/xdevsapps/codeguilds-cli/issues/2">codeguilds-cli #2</a>; current upstream types can describe only one filename.</li>
         <li><code class="status">[]</code> Add the CodeGuilds badge only after the installed files and a live use test pass.</li>
       </ul>
       <h4>Testing strategy</h4>
-      <ul><li><code class="status">[]</code> Isolated CodeGuilds install file inventory plus live transcript smoke — proves the badge represents a working route.</li></ul>
+      <ul><li><code class="status">[]</code> Isolated CodeGuilds install inventory currently fails the bundle contract; no live transcript can run from that install, so the badge remains withheld until upstream supports complete repository-backed skills.</li></ul>
       <div class="loop">🔁 CodeGuilds failure blocks its badge, not the verified v1.1 release or other approved submissions.</div>
     </div>
 
@@ -438,22 +440,22 @@
       <li><code class="status">[x]</code> <code>python3 /Users/OldJimmy/.codex/skills/.system/skill-creator/scripts/quick_validate.py .</code> — skill packaging passed.</li>
       <li><code class="status">[x]</code> <code>bash .scripts/verify-isolated-install.sh</code> — complete local candidate bundle passed through Skills CLI 1.5.21.</li>
       <li><code class="status">[x]</code> Live stdout smoke plus temporary output-directory smoke — user outcome passed.</li>
-      <li><code class="status">[]</code> GitHub CI and tag/release ancestry — public artifact agreement.</li>
+      <li><code class="status">[x]</code> GitHub CI and tag/release ancestry — public artifact agreement passed at merge <code>57ae480</code> and tag <code>v1.1.0</code>.</li>
       <li><code class="status">[x]</code> Mermaid parse and render checks plus the 273-word PlanF3 Approval View validation passed.</li>
     </ul>
   </section>
 
   <section id="continuity-closeout">
     <h2>Continuity Closeout</h2>
-    <p>This HTML plan is the authoritative v1.1 and distribution contract. The local feature candidate is committed at <code>f3a5028</code>; this closeout record is committed separately so it can reference that evidence truthfully. Future approved work must append release and submission URLs and updated Promised/Delivered/Missing status here. Do not create new project memory categories, submission prompt artifacts, or copied distribution repositories by default.</p>
+    <p>This HTML plan is the authoritative v1.1 and distribution contract. The feature work began at <code>f3a5028</code>, merged through pull request #2 at <code>57ae480</code>, and is public as <code>v1.1.0</code>. Future approved work must append submission URLs and updated Promised/Delivered/Missing status here. Do not create new project memory categories, submission prompt artifacts, or copied distribution repositories by default.</p>
     <table>
       <thead><tr><th>Promise</th><th>Status</th><th>Evidence or next gate</th></tr></thead>
       <tbody>
-        <tr><td>Focused v1.1 maintenance candidate</td><td>Delivered locally</td><td>Feature commit <code>f3a5028</code>; correctness, portability, documentation, and safe-agent changes pass deterministic and live checks.</td></tr>
-        <tr><td>Automated tests and isolated install proof</td><td>Delivered locally</td><td>Fourteen tests pass on Python 3.8 and 3.13; Skills CLI 1.5.21 copies every required file.</td></tr>
-        <tr><td>Obsidian and knowledge-base positioning</td><td>Delivered locally</td><td>Validated frontmatter, README, and Codex metadata use the focused archival-note promise.</td></tr>
-        <tr><td>Move from <code>master</code> to <code>main</code></td><td>Missing by design</td><td>Blocked on the separate remote publication approval after the local candidate is committed.</td></tr>
-        <tr><td>CodeGuilds verification and submissions</td><td>Missing by design</td><td>Blocked on v1.1 publication plus separate external-action approvals.</td></tr>
+        <tr><td>Focused v1.1 maintenance release</td><td>Delivered publicly</td><td>Feature commit <code>f3a5028</code>, merge <code>57ae480</code>, tag and release <code>v1.1.0</code>; correctness, portability, documentation, and safe-agent changes pass deterministic and live checks.</td></tr>
+        <tr><td>Automated tests and isolated install proof</td><td>Delivered publicly</td><td>Fourteen tests pass on GitHub-hosted Python 3.8 and 3.13; a public-tag Skills CLI 1.5.21 install copied every required file.</td></tr>
+        <tr><td>Obsidian and knowledge-base positioning</td><td>Delivered publicly</td><td>Released frontmatter, README, Codex metadata, GitHub Release, and claimed CodeGuilds listing use the focused archival-note promise.</td></tr>
+        <tr><td>Move from <code>master</code> to <code>main</code></td><td>Delivered safely</td><td><code>main</code> is canonical; the automatically fast-forwarded <code>master</code> compatibility branch preserves raw legacy links without diverging.</td></tr>
+        <tr><td>CodeGuilds verification and submissions</td><td>Partially delivered</td><td>Listing, banner, tagline, README, version, and correct install command are live. CodeGuilds' own multi-file installer remains upstream-blocked in issues #1 and #2; badge and directory submissions are not delivered.</td></tr>
         <tr><td>Four-week adoption record</td><td>Not started</td><td>Begins only after the first approved directory acceptance.</td></tr>
       </tbody>
     </table>
@@ -464,7 +466,7 @@
     <ol class="questionable-list">
       <li id="questionable-1"><details><summary>Questionable 1: Should a bare YouTube link immediately create a file?</summary><p><strong>Recommendation for v1.1:</strong> preserve the current behavior because it is part of the simple viral promise, but make the skill state the save location clearly and never use <code>--force</code> automatically. If Jimmy prefers an intent question for bare links, amend Phase 1 before build.</p></details></li>
       <li id="questionable-2"><details open><summary>Questionable 2 — resolved: Should Python 3.8 remain supported?</summary><p><strong>Decision:</strong> yes. The implementation uses deferred annotations, the declared dependency ranges support Python 3.8, and all fourteen tests plus compilation passed on disposable CPython 3.8.20. CI will repeat the proof after publication approval.</p></details></li>
-      <li id="questionable-3"><details open><summary>Questionable 3 — resolved: Should the repository rename <code>master</code> to <code>main</code>?</summary><p><strong>Decision:</strong> yes, as a controlled migration during the separately approved publication gate. Jimmy prefers the mainstream convention provided it does not disturb users or local custody. The 2026-08-03 audit found no remote <code>main</code>, open pull requests, releases, tags, Pages site, workflows, protection rule, tracked <code>master</code> references, or indexed external <code>master</code> links. GitHub redirects normal file pages but not raw URLs or old pull commands, so the plan includes a last-minute dependency re-check, local tracking migration, raw-asset and installer proof, registered-worktree verification, and rollback before publication if any check fails.</p></details></li>
+      <li id="questionable-3"><details open><summary>Questionable 3 — resolved: Should the repository rename <code>master</code> to <code>main</code>?</summary><p><strong>Decision:</strong> yes. The last-minute audit discovered that CodeGuilds mixed a raw <code>main</code> banner with a raw <code>master</code> README, and GitHub does not redirect raw branch URLs. The repository therefore uses canonical <code>main</code> plus an automatically fast-forwarded <code>master</code> compatibility branch. Both raw routes resolve, local tracking moved cleanly, the registered worktree was preserved, and the synchronization workflow passed after merge.</p></details></li>
       <li id="questionable-4"><details><summary>Questionable 4: Should v1.1 add speaker identification, translation, cover images, or caching to compete with the 18.3k-install leader?</summary><p><strong>Recommendation:</strong> no. Those features would blur the release and make review harder. Compete through a smaller, dependable, single-file archival-note experience. Reconsider advanced features only after observing user requests after v1.1.</p></details></li>
       <li id="questionable-5"><details><summary>Questionable 5: Should CodeGuilds receive a badge immediately because the listing is claimed?</summary><p><strong>Recommendation:</strong> no. Keep the claimed page, fix its metadata, and add the badge only after its published installer successfully copies and runs the full skill in isolation.</p></details></li>
       <li id="questionable-6"><details><summary>Questionable 6: Should the skill be copied into large community repositories?</summary><p><strong>Recommendation:</strong> prefer link-based catalogs. A copied skill becomes a second source that can miss fixes and dependency updates. Consider vendoring only when a directory proves meaningful reach and has an explicit upstream synchronization model.</p></details></li>
@@ -478,8 +480,9 @@
       <li>Travis requires a human-authored submission. Codex must not provide final submission prose for Jimmy to paste verbatim.</li>
       <li>hesreallyhim currently says recommendations are paused while the list catches up. Do not open a new issue until the policy changes.</li>
       <li>Composio has high headline reach but slow observed review throughput and a copy-based model; it is intentionally not in the first wave.</li>
-      <li>Current local Git state is synchronized at <code>7ea84a0</code> but not clean because <code>.claude/</code> and <code>.serena/</code> are untracked. They are protected, not part of v1.1.</li>
-      <li>The default-branch audit on 2026-08-03 found <code>master</code> unprotected and synchronized, no remote <code>main</code>, and no repository feature that currently depends on the old name. CodeGuilds currently requests raw <code>main</code> URLs: its banner and README requests fail today and should begin resolving after the rename.</li>
+      <li>Current local work remains on <code>codex/youtube-fetcher-v1-1</code>; only <code>.claude/</code> and <code>.serena/</code> are untracked. They are protected and were not included in v1.1.</li>
+      <li>GitHub now uses canonical <code>main</code>, while the passing legacy-sync workflow keeps <code>master</code> identical for CodeGuilds and historical raw links.</li>
+      <li>CodeGuilds v1.1.0 currently supports discovery only for this multi-file skill. Its page now presents the verified <code>npx skills</code> route, while its own installer remains unadvertised because the isolated bundle inventory failed.</li>
     </ul>
   </section>
 
@@ -488,6 +491,8 @@
     <p><strong>2026-08-03 — default branch:</strong> Replaced the recommendation to preserve <code>master</code> with a controlled migration to <code>main</code>. The change follows Jimmy's preference and a live safety audit. It adds preflight, local-clone, registered-worktree, raw-asset, CodeGuilds, installer, and rollback checks. Review is reopened; no branch or remote state has changed.</p>
     <p><strong>2026-08-03 — build authorized:</strong> Jimmy approved the plan for local implementation. Phase 0 completed on <code>codex/youtube-fetcher-v1-1</code>. Remote publication, branch rename, release, CodeGuilds, and directory gates remain closed.</p>
     <p><strong>2026-08-03 — local release candidate:</strong> Phases 1–4 completed in feature commit <code>f3a5028</code>. Deterministic tests, Python 3.8/3.13 compatibility, skill validation, formatting and shell checks, isolated installation, two live smokes, YAML parsing, and duplicate preservation passed. One pre-existing filename-glob defect was discovered by the new tests and repaired. No remote action occurred.</p>
+    <p><strong>2026-08-03 — v1.1 publication:</strong> Jimmy approved the remote gate and later authorized the necessary CodeGuilds correction. GitHub's default moved to <code>main</code>; a synchronized <code>master</code> compatibility branch preserves the mixed raw URLs discovered during preflight. Pull request #2 merged at <code>57ae480</code>, post-merge CI and branch synchronization passed, and annotated tag plus GitHub Release <code>v1.1.0</code> passed public-tag installation and live use proof.</p>
+    <p><strong>2026-08-03 — CodeGuilds truth:</strong> The claimed page now shows the released tagline, README, correct Skills CLI command, banner, and version 1.1.0. An isolated CodeGuilds install proved its current single-file skill model cannot install the executable bundle and ignores project scope. The badge is withheld; upstream issues <a href="https://github.com/xdevsapps/codeguilds-cli/issues/1">#1</a> and <a href="https://github.com/xdevsapps/codeguilds-cli/issues/2">#2</a> contain the exact reproducible defects.</p>
   </section>
 </main>
 </body>
