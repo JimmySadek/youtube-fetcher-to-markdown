@@ -100,14 +100,14 @@
       <dl>
         <dt>Planning level</dt><dd data-plan-level="full">Full PlanF3</dd>
         <dt>Planning reason</dt><dd>The work changes a public skill, its installation contract, its release proof, and several third-party distribution channels with separate approval owners.</dd>
-        <dt>Status</dt><dd>Local release candidate complete — awaiting separate remote migration and publication approval.</dd>
+        <dt>Status</dt><dd>v1.1.0 published and verified — Wave 1 distribution is active through VoltAgent pull request #869.</dd>
         <dt>Created</dt><dd>2026-08-03</dd>
-        <dt>Modified</dt><dd>2026-08-03 — initial plan, default-branch amendment, approved local build, and verified release-candidate closeout</dd>
-        <dt>Commits</dt><dd>Baseline <code>7ea84a0dbe3b8f150b11a3d371cbf06f27252939</code>; local v1.1 feature commit <code>f3a5028</code>; plan closeout is committed separately after validation.</dd>
+        <dt>Modified</dt><dd>2026-08-04 — browser-led channel review, VoltAgent submission, and near-T0 evidence baseline</dd>
+        <dt>Commits</dt><dd>Baseline <code>7ea84a0dbe3b8f150b11a3d371cbf06f27252939</code>; v1.1 feature commit <code>f3a5028</code>; public merge <code>57ae480</code>; distribution execution amendment is recorded in Git history.</dd>
         <dt>Agent</dt><dd>Codex</dd>
         <dt>Session</dt><dd>Current Codex desktop planning task</dd>
         <dt>Back references</dt><dd><a href="../README.md">README</a>, <a href="../SKILL.md">skill contract</a>, <a href="../scripts/fetch_transcript.py">runtime script</a>, <a href="https://skills.sh/jimmysadek/youtube-fetcher-to-markdown/youtube-fetcher">skills.sh listing</a>, <a href="https://codeguilds.dev/packages/youtube-fetcher-to-markdown">CodeGuilds listing</a></dd>
-        <dt>Forward references</dt><dd>The release and CodeGuilds issue URLs are recorded below. Future directory submission URLs will be appended only after their separate approvals.</dd>
+        <dt>Forward references</dt><dd>The release, CodeGuilds issue URLs, and <a href="https://github.com/VoltAgent/awesome-agent-skills/pull/869">VoltAgent pull request #869</a> are recorded below. Future directory submissions still require their own policy and approval gates.</dd>
       </dl>
     </details>
   </header>
@@ -122,13 +122,13 @@
       </article>
       <article class="summary-panel summary-outcome">
         <h3>🎯 Expected outcome</h3>
-        <p data-summary-item="outcome">YouTube Fetcher v1.1 reliably creates correct, Obsidian-ready archival notes, installs as a complete skill across supported agents, and has a release package strong enough for selective public submissions.</p>
+        <p data-summary-item="outcome">YouTube Fetcher v1.1 remains one canonical, verified skill while a small number of trusted libraries receive policy-compliant submissions in a measured sequence.</p>
       </article>
       <div class="summary-grid">
         <article class="summary-panel summary-included">
           <h3>📦 What you will receive</h3>
-          <div data-summary-item="deliverables"><ul><li>A focused v1.1 maintenance release.</li><li>Automated tests and an isolated install check.</li><li>Clearer Obsidian and knowledge-base positioning.</li><li>A controlled move from master to main with post-move checks.</li><li>A verified CodeGuilds decision and selective submission wave.</li><li>A short adoption measurement record.</li></ul></div>
-          <p><strong>✅ Included:</strong> <span data-summary-item="included">URL and language correctness, portable paths, output-directory choice, dependency consent, packaging proof, a safe default-branch migration, release proof, CodeGuilds verification, and approved submissions.</span></p>
+          <div data-summary-item="deliverables"><ul><li>The completed v1.1 release and branch migration.</li><li>A live evidence baseline for distribution.</li><li>A ranked library rollout with channel-specific rules.</li><li>Human-only handoffs where maintainers prohibit AI submissions.</li><li>A four-week measurement and stop/expand decision.</li></ul></div>
+          <p><strong>✅ Included:</strong> <span data-summary-item="included">The published release proof, CodeGuilds truth, skills.sh baseline, duplicate and policy checks, separately approved submissions, acceptance verification, and adoption measurement.</span></p>
         </article>
         <article class="summary-panel summary-excluded">
           <h3>🚫 Not included</h3>
@@ -137,12 +137,12 @@
       </div>
       <article class="summary-panel summary-caution" data-summary-item="important-constraint">
         <h3>⚠️ Important approval or constraint</h3>
-        <p>The v1.1 release and safe branch migration are complete. The claimed CodeGuilds page is current, but its installer cannot yet copy a complete multi-file skill, so its badge remains withheld. Existing untracked workspace folders remain protected and outside the release.</p>
+        <p>VoltAgent pull request #869 is now open. No other library submission or promotional post was made. CodeGuilds remains discovery-only, and Codex did not cross the human-authorship rules enforced by Travis and Awesome Claude Code.</p>
       </article>
     </div>
     <div class="summary-close">
-      <p><strong>🏁 Finished means:</strong> <span data-summary-item="finished-means">A clean v1.1 release can be installed and used successfully in isolation, the repository and CodeGuilds images resolve through main, its claims match observed behavior, CodeGuilds is advertised only if its installer works, and every approved directory submission is traceable without creating a second source of truth.</span></p>
-      <p><strong>➡️ Next decision:</strong> <span data-summary-item="next-decision">Review the published v1.1 closeout, then decide whether to contribute an upstream CodeGuilds installer repair before beginning selective directory submissions.</span></p>
+      <p><strong>🏁 Finished means:</strong> <span data-summary-item="finished-means">Every approved channel has a recorded policy check and outcome, human-only rules are respected, accepted listings point to GitHub rather than copied skill code, and four weekly snapshots support a factual keep, refine, or stop decision.</span></p>
+      <p><strong>➡️ Next decision:</strong> <span data-summary-item="next-decision">Let VoltAgent review pull request #869. Jimmy may independently decide whether to author a Travis submission from the facts-only evidence card; Wave 2 remains closed.</span></p>
     </div>
   </section>
 
@@ -153,44 +153,48 @@
 
   <section id="problem">
     <h2>Problem</h2>
-    <p>The public skill works today, but several claims are broader than the implementation. Common YouTube URL shapes fail, a language fallback can be mislabeled, the skill instructions assume Jimmy's local install path, agents are told to bypass duplicate protection and install dependencies without approval, and there is no automated regression or installation proof. Promotion before correcting these weaknesses would increase support and trust risk. CodeGuilds adds a separate external blocker: its current CLI failed an isolated install test, its imported banner points to a nonexistent branch, and its public tagline is clipped.</p>
-    <p class="evidence"><strong>Current evidence:</strong> 190 GitHub stars, 118 deduplicated skills.sh installs, 15 forks, complete installation through the current <code>npx skills</code> CLI, and a successful live transcript smoke test. The strongest competing transcript skill has substantially more installs and features, so v1.1 should win through a simpler archival-note contract rather than feature imitation.</p>
+    <p>The release is ready and selective distribution has begun. The real risk remains channel quality: some libraries prohibit AI-created submissions, one large list has hundreds of open pull requests, two newer registries have broken or unavailable source paths, and copy-based catalogs would create a second skill source that can drift. CodeGuilds remains a separate installer blocker rather than a reason to delay trustworthy link-based catalogs.</p>
+    <p class="evidence"><strong>Current evidence:</strong> 191 GitHub stars, 15 forks, 118 deduplicated skills.sh installs, 280 views from 122 visitors, and 278 clones from 149 cloners in the available GitHub traffic window. The public v1.1.0 release, CI, isolated installation, and live transcript smoke are complete. VoltAgent pull request #869 is the only new directory submission.</p>
   </section>
 
   <section id="solution">
     <h2>Solution</h2>
-    <p>Ship one maintenance release with a narrow sequence: lock the product promise, fix correctness, make the bundle portable, prove it in clean environments, publish only after a release gate, then distribute through high-signal link catalogs. CodeGuilds follows its own verification gate and cannot block the other approved channels.</p>
+    <p>Run distribution as a gated funnel: refresh the evidence and policies, submit first to the strongest link-based catalog, preserve human authorship where required, hold channels whose fit or provenance is doubtful, verify every accepted listing, and measure four weeks before expanding.</p>
     <figure class="diagram">
       <pre class="mermaid">flowchart TD
   accTitle: YouTube Fetcher v1.1 release and distribution gates
-  accDescr: The plan moves from the current public skill through approval, hardening, independent verification, release, CodeGuilds validation, selective submissions, and adoption measurement.
+  accDescr: The plan starts from the verified release, checks every channel, separates AI-allowed and human-only submissions, defers doubtful registries, and measures results before expanding.
 
-  BASE["Current public skill<br/>190 stars · 118 installs"]:::existing
-  BUILD{"Jimmy approves build"}:::user
-  HARDEN["v1.1 correctness<br/>and portability"]:::proposed
-  PROOF["Automated tests · isolated install<br/>live transcript smoke"]:::validation
-  GATE{"Release candidate passes<br/>all acceptance checks"}:::decision
-  MIGRATE["Migrated safely<br/>main + legacy mirror"]:::validation
-  RELEASE["v1.1.0 published<br/>verified release"]:::success
-  CODEGUILDS{"CodeGuilds listing refreshed<br/>installer bundle complete?"}:::external
-  BADGE["Update claimed listing<br/>and add verified badge"]:::success
-  HOLD["Keep listing<br/>badge withheld · upstream issues"]:::risk
-  SUBMIT["Selective submissions<br/>VoltAgent · Travis · hesreallyhim when open"]:::external
-  MEASURE["Weekly 14-day snapshots<br/>visits · clones · stars · installs"]:::validation
+  RELEASE["v1.1.0 public and verified<br/>191 stars · 118 skills.sh installs"]:::success
+  EXISTING["Existing discovery<br/>skills.sh live · CodeGuilds held"]:::existing
+  PREFLIGHT["Fresh evidence · policy re-read<br/>duplicate and link checks"]:::validation
+  APPROVE{"Jimmy approves<br/>this channel action"}:::user
+  VOLT["Wave 1 · VoltAgent<br/>link-only community PR"]:::external
+  TRAVIS["Conditional · Travis<br/>Jimmy authors and submits"]:::user
+  CLAUDE["Hold · Awesome Claude Code<br/>Claude-specific claim not yet proven"]:::risk
+  VERIFY{"Listing accepted<br/>and live correctly?"}:::decision
+  MEASURE["T0 plus four weekly snapshots<br/>traffic · referrers · stars · installs"]:::validation
+  EXPAND{"Evidence supports<br/>another channel?"}:::decision
+  DISCOVERY["Optional Wave 2<br/>AwesomeSkills after trust check"]:::external
+  DEFER["Defer broken-provenance<br/>and copy-based registries"]:::risk
+  CLOSE["Keep · refine · stop<br/>channel decision recorded"]:::success
 
-  BASE --> BUILD
-  BUILD -->|"Approved"| HARDEN
-  HARDEN ==> PROOF
-  PROOF --> GATE
-  GATE -->|"No — repair"| HARDEN
-  GATE ==>|"Yes"| MIGRATE
-  MIGRATE ==> RELEASE
-  RELEASE --> CODEGUILDS
-  CODEGUILDS -->|"Pass"| BADGE
-  CODEGUILDS -->|"Fail"| HOLD
-  BADGE --> SUBMIT
-  HOLD --> SUBMIT
-  SUBMIT --> MEASURE
+  RELEASE --> EXISTING
+  EXISTING ==> PREFLIGHT
+  PREFLIGHT --> APPROVE
+  APPROVE -->|"Approved"| VOLT
+  APPROVE -->|"Human-only"| TRAVIS
+  APPROVE -->|"Fit not truthful"| CLAUDE
+  VOLT --> VERIFY
+  TRAVIS --> VERIFY
+  VERIFY -->|"Yes"| MEASURE
+  VERIFY -->|"No or no response"| CLOSE
+  MEASURE --> EXPAND
+  EXPAND -->|"Yes"| DISCOVERY
+  EXPAND -->|"No"| CLOSE
+  DISCOVERY --> MEASURE
+  CLAUDE --> DEFER
+  DEFER --> CLOSE
 
   classDef existing fill:#F1F5F9,stroke:#475569,color:#0F172A,stroke-width:2px;
   classDef user fill:#FEF3C7,stroke:#B45309,color:#111827,stroke-width:2px;
@@ -200,7 +204,7 @@
   classDef success fill:#DCFCE7,stroke:#15803D,color:#052E16,stroke-width:3px;
   classDef external fill:#EDE9FE,stroke:#6D28D9,color:#2E1065,stroke-width:2px;
   classDef risk fill:#FEE2E2,stroke:#C1121F,color:#450A0A,stroke-width:2px;</pre>
-      <figcaption>Solid arrows show the normal sequence; thick arrows show the release-critical proof path. Every decision is written in the node or edge label, so color is not required to understand the diagram.</figcaption>
+      <figcaption>Thick arrows show the evidence-critical path. Human-only, hold, and approval boundaries are written directly in node and edge labels, so color is not required to understand the rollout.</figcaption>
     </figure>
   </section>
 
@@ -208,10 +212,10 @@
     <h2>Success Contract</h2>
     <div class="contract-grid">
       <div class="contract-item"><strong>User outcome</strong><p>A user can install the complete skill, provide a supported YouTube link, and receive a correctly labeled, queryable Markdown note in the expected location without an API key or an unexpected overwrite.</p></div>
-      <div class="contract-item"><strong>Acceptance criteria</strong><p>Standard, short, embed, Shorts, live, reordered-query, and raw-ID inputs resolve correctly. The actual selected caption language is recorded. Output-directory precedence is deterministic. Duplicate handling is safe. Python 3.8 support is either proven or the public minimum is corrected. The default branch is migrated to <code>main</code> without breaking local worktrees, installation, or current public assets. Tests, isolated install, skill validation, and a live smoke test pass.</p></div>
+      <div class="contract-item"><strong>Acceptance criteria</strong><p>The completed v1.1 checks remain green. Before each external action, the current channel policy, duplicate state, released URL, and public install are rechecked. Human-only submissions are written and sent by Jimmy. Every accepted listing resolves to the canonical repository, and distribution results are recorded for four weeks.</p></div>
       <div class="contract-item"><strong>Invariants</strong><p>GitHub remains the canonical source. The default result remains a single local Markdown archival note with transcript, creator description, chapters when available, metadata, and capture provenance. No API key is required. Existing user files are not silently overwritten.</p></div>
-      <div class="contract-item"><strong>Non-goals</strong><p>No feature race with larger transcript tools. No Whisper fallback, cover-image pipeline, speaker labeling, translation workflow, video download, hosted API, Claude plugin, or vendored copies in third-party repositories during v1.1.</p></div>
-      <div class="contract-item"><strong>Failure conditions</strong><p>The plan fails if output metadata can be false, a documented URL remains unsupported, installation omits the script, an agent mutates dependencies without consent, the default-branch migration breaks an installer or registered worktree, CodeGuilds is badged while its installer fails, unrelated local folders are staged, or external publication occurs without the matching approval.</p></div>
+      <div class="contract-item"><strong>Non-goals</strong><p>No feature race, paid promotion, social-media campaign, mass directory blast, directory-specific fork, copied skill bundle, or product change made only to satisfy a catalog.</p></div>
+      <div class="contract-item"><strong>Failure conditions</strong><p>The plan fails if an external action occurs without its approval, Codex authors or submits where a maintainer requires a human, a listing copies the skill without an approved synchronization model, CodeGuilds receives a trust badge while its installer fails, a submission overstates Claude-specific functionality, or adoption is claimed without direct evidence.</p></div>
     </div>
   </section>
 
@@ -227,6 +231,9 @@
         <tr><td>Default branch</td><td>Controlled rename from <code>master</code> to <code>main</code> during the publication gate</td><td><code>main</code> is the preferred convention, it repairs CodeGuilds' current raw image and README paths, and the safety audit found no tracked or indexed dependency on <code>master</code>.</td><td>Keep <code>master</code> solely to preserve convention, or maintain a stale compatibility branch.</td></tr>
         <tr><td>Directory model</td><td>Link-based catalogs pointing to GitHub</td><td>One source receives updates and security fixes.</td><td>Copied or vendored skill forks that drift.</td></tr>
         <tr><td>CodeGuilds</td><td>Keep claimed listing; badge only after clean install</td><td>Presence is useful, but a badge is a trust claim.</td><td>Add the badge immediately because the listing exists.</td></tr>
+        <tr><td>First submission</td><td>VoltAgent Community Skills</td><td>It is active, cross-agent, link-only, and explicitly asks for mature skills with real usage—the strongest match for the current evidence.</td><td>Start with a Claude-only list or a low-trust instant directory.</td></tr>
+        <tr><td>Human-only channels</td><td>Evidence handoff to Jimmy; no AI-authored final text or automated submission</td><td>Travis and Awesome Claude Code explicitly enforce human participation.</td><td>Generate paste-ready prose or use GitHub automation anyway.</td></tr>
+        <tr><td>Expansion rule</td><td>One measured wave before long-tail directories</td><td>Acceptance and direct referral evidence are more useful than raw listing count.</td><td>Submit everywhere at once and lose attribution.</td></tr>
       </tbody>
     </table>
   </section>
@@ -380,31 +387,37 @@
     </div>
 
     <div class="phase">
-      <h3><code class="status">[]</code> Phase 7: Submit selectively and preserve one source of truth</h3>
-      <p>Use separate approval for each submission. Tailor the factual description to each current policy; do not copy Strategic Partner's old drafts.</p>
+      <h3><code class="status">[~]</code> Phase 7: Submit selectively and preserve one source of truth</h3>
+      <p>Jimmy approved the distribution plan and later authorized browser-led execution. One compliant link-only submission is now open; every other channel remains governed by its own policy, eligibility, provenance, and source-custody gate.</p>
       <ul>
-        <li><code class="status">[]</code> Submit to VoltAgent under Community Skills using a link-only entry of ten words or fewer and current usage evidence.</li>
-        <li><code class="status">[]</code> Jimmy personally authors the Travis submission and acknowledges its no-AI-submission rule; Codex may provide factual evidence but not final prose.</li>
-        <li><code class="status">[]</code> Wait for hesreallyhim recommendations to reopen; then use the required human web form and a factual one-line description.</li>
-        <li><code class="status">[]</code> Let skills.sh refresh from the canonical repository and add its install-count badge after v1.1.</li>
-        <li><code class="status">[]</code> Defer Composio and vendored-copy catalogs unless their review throughput and source-sync model improve.</li>
+        <li><code class="status">[x]</code> <strong>VoltAgent preflight:</strong> captured 191 stars, 15 forks, and 118 skills.sh installs; re-read the live policy; found no duplicate YouTube Fetcher entry; verified the v1.1 release and canonical repository; synchronized Jimmy's fork before submission.</li>
+        <li><code class="status">[x]</code> <strong>Existing discovery:</strong> skills.sh remains live at 118 installs. CodeGuilds shows zero web downloads and one CLI record from the 2026-08-03 isolated verification; that record is not evidence of external adoption. CodeGuilds stays discovery-only while its multi-file installer remains blocked.</li>
+        <li><code class="status">[x]</code> <strong>Wave 1 — submitted:</strong> opened <a href="https://github.com/VoltAgent/awesome-agent-skills/pull/869">VoltAgent pull request #869</a> under Productivity and Collaboration. The link-only entry uses the required <code>JimmySadek/youtube-fetcher</code> prefix, a seven-word description, the canonical GitHub URL, and an evidence-based PR body. Status: open, with one commit and one changed file.</li>
+        <li><code class="status">[]</code> <strong>Conditional human channel:</strong> the live <a href="https://github.com/travisvn/awesome-claude-skills/blob/main/CONTRIBUTING.md">Travis policy</a> prohibits AI-generated or AI-submitted proposals. Its queue showed 646 open pull requests and 19 open results for <code>youtube</code>. Jimmy may independently author and submit one item from a facts-only evidence card; Codex must not provide paste-ready prose or submit it.</li>
+        <li><code class="status">[x]</code> <strong>Awesome Claude Code decision — hold:</strong> the <a href="https://github.com/hesreallyhim/awesome-claude-code/issues/new?template=recommend-resource.yml">live human form</a> was inspected. It requires the submitter to attest both that a human performed the work and that the resource is specific to Claude Code. The released skill is intentionally cross-agent, so no honest submission was made.</li>
+        <li><code class="status">[]</code> <strong>Optional Wave 2 — staged:</strong> <a href="https://www.awesomeskills.dev/en/submit">AwesomeSkills.dev</a> accepts a GitHub URL and publishes instantly. Its form was inspected, but submission remains closed until VoltAgent is accepted or produces direct referral evidence.</li>
+        <li><code class="status">[x]</code> <strong>Registry decisions:</strong> SkillsDir's advertised GitHub issue template returned 404; SkillsMD's form works but its claimed public source repository is unavailable; Composio requires copying the skill into its repository. None was submitted. Reconsider only after provenance, endpoint, or synchronization safeguards materially improve.</li>
       </ul>
       <h4>Testing strategy</h4>
-      <ul><li><code class="status">[]</code> Policy re-read, duplicate search, working links, released install command, and recorded issue or PR URL for every approved channel.</li></ul>
-      <div class="loop">🔁 Rejection is recorded as channel evidence; do not resubmit repeatedly or weaken source custody to gain a listing.</div>
+      <ul>
+        <li><code class="status">[x]</code> Saved the 2026-08-04 policy and duplicate findings, approval record, working release URL, and VoltAgent submission URL in this plan. Acceptance and final live-listing proof remain pending.</li>
+        <li><code class="status">[]</code> After acceptance, follow the listing's install link in an isolated directory and prove it resolves to the canonical bundle rather than a partial copy.</li>
+      </ul>
+      <div class="loop">🔁 Stop a channel if its policy changes, human-only authorship cannot be honored, source provenance is unclear, or the listing requires copied code. Record rejection or silence once; do not repeatedly resubmit.</div>
     </div>
 
     <div class="phase">
-      <h3><code class="status">[]</code> Phase 8: Measure adoption and close the release track</h3>
-      <p>Separate work completed from audience response. Directory acceptance is controlled by maintainers, while accurate measurement and follow-up are controllable.</p>
+      <h3><code class="status">[~]</code> Phase 8: Measure adoption and close the release track</h3>
+      <p>Separate publication work from audience response. A near-T0 public baseline was captured immediately after the first submission; preserve the short GitHub traffic window every seven days after acceptance.</p>
       <ul>
-        <li><code class="status">[]</code> Capture weekly GitHub views, unique visitors, clones, unique cloners, referrers, stars, forks, and skills.sh installs for four weeks after the first accepted listing.</li>
-        <li><code class="status">[]</code> Record each channel as submitted, accepted, rejected, paused, or blocked.</li>
-        <li><code class="status">[]</code> Compare the four-week result with the pre-release baseline without attributing causation where referral evidence is absent.</li>
-        <li><code class="status">[]</code> Decide keep, refine, or stop for each channel; do not expand to long-tail registries without evidence.</li>
+        <li><code class="status">[x]</code> Near-T0 on 2026-08-04: 191 GitHub stars, 15 forks, 118 skills.sh installs; latest available private traffic window remains 280 views from 122 visitors and 278 clones from 149 cloners. The public counters were captured minutes after PR creation, so they are suitable as a baseline but not proof of pre-submission causality.</li>
+        <li><code class="status">[x]</code> Channel state on 2026-08-04: VoltAgent submitted/open; Travis human-only/not submitted; Awesome Claude Code held/ineligible as currently packaged; AwesomeSkills staged; SkillsDir blocked by 404; SkillsMD blocked on provenance; Composio deferred on copy drift; CodeGuilds discovery-only.</li>
+        <li><code class="status">[]</code> Compare post-listing counts with T0 and the previous 14-day window. Attribute impact to a channel only when its referrer, directory analytics, or other direct evidence appears; otherwise describe correlation only.</li>
+        <li><code class="status">[]</code> Advance to optional Wave 2 only if Wave 1 produces an accepted live listing plus direct referral or installation evidence, or a trusted maintainer explicitly invites the skill.</li>
+        <li><code class="status">[]</code> At week four, decide keep, refine, or stop per channel. Close the track even if the result is rejection, silence, or no measurable lift.</li>
       </ul>
       <h4>Testing strategy</h4>
-      <ul><li><code class="status">[]</code> Dated metrics snapshots and direct submission URLs — preserves evidence before GitHub's 14-day traffic window expires.</li></ul>
+      <ul><li><code class="status">[]</code> Dated T0/W1/W2/W3/W4 metric snapshots, direct channel URLs, live-link checks, and an explicit attribution-confidence note.</li></ul>
       <div class="loop">🔁 The track closes with a factual result even if a directory declines or produces no measurable traffic.</div>
     </div>
   </section>
@@ -421,8 +434,10 @@
         <tr><td>Default-branch migration</td><td>GitHub defaults to <code>main</code>; the local branch tracks <code>origin/main</code>; <code>origin/HEAD</code>, registered worktrees, raw assets, CodeGuilds rendering, and the isolated installer all remain correct.</td><td>GitHub API, Git branch and worktree state, raw URL status, page check, and isolated install transcript.</td><td>Jimmy approves the remote action; builder runs and verifies the migration.</td><td>Phase 5 before publication.</td><td>Rename back before publishing v1.1 and record the failing dependency.</td></tr>
         <tr><td>v1.1 release</td><td>CI, tests, live smoke, docs, commit, tag, release notes, and public installed artifact agree.</td><td>GitHub checks, tag ancestry, release URL, install transcript.</td><td>Jimmy approves publication; builder verifies artifact.</td><td>Publication gate.</td><td>Do not tag or retract/correct before promotion.</td></tr>
         <tr><td>CodeGuilds channel</td><td>CLI starts, installs the full bundle, and the installed skill completes a live smoke; listing text and image render correctly.</td><td>Isolated logs, file inventory, page check.</td><td>Builder plus CodeGuilds external dependency.</td><td>After vendor fix and v1.1.</td><td>Keep listing, withhold badge, record blocker.</td></tr>
-        <tr><td>Directory submissions</td><td>Each uses the current policy, released URL, factual positioning, and separate approval; no vendored drift.</td><td>Issue or PR URL and policy checklist.</td><td>Jimmy for human-only text and external action; builder for facts.</td><td>After release.</td><td>Correct once if invited; otherwise record rejection and stop.</td></tr>
-        <tr><td>Adoption measurement</td><td>Four weekly snapshots distinguish observed counts from inference and preserve the 14-day traffic data.</td><td>Dated metrics and channel-state table.</td><td>Jimmy or an approved monitor.</td><td>Weeks 1–4 after first acceptance.</td><td>Report missing windows honestly; do not invent attribution.</td></tr>
+        <tr><td>VoltAgent submission</td><td>Current Community Skills policy, no duplicate, link-only canonical URL, author prefix, description of ten words or fewer, separate approval, and a live accepted entry.</td><td>Dated policy and duplicate checks, PR URL, review outcome, and post-acceptance link test.</td><td>Jimmy approves; builder may submit and verify.</td><td>Wave 1 after plan approval.</td><td>Correct once if invited; otherwise record rejection and stop.</td></tr>
+        <tr><td>Human-only submissions</td><td>Codex supplies factual evidence only. Jimmy independently authors and submits; any required platform attestations are truthful.</td><td>Facts card, Jimmy's confirmation, and issue or PR URL without AI-authored final prose.</td><td>Jimmy.</td><td>Conditional Wave 1.</td><td>Do not submit if authorship or Claude-specific fit cannot be stated honestly.</td></tr>
+        <tr><td>Optional registries</td><td>Public provenance, working source links, canonical-link distribution, review or removal path, and an approved reason to expand.</td><td>Trust checklist, source URL, accepted listing, and isolated link/install check.</td><td>Jimmy approves; builder verifies.</td><td>Only after Wave 1 evidence.</td><td>Defer unavailable-source, instant-live, or copy-based channels.</td></tr>
+        <tr><td>Adoption measurement</td><td>T0 plus four weekly snapshots distinguish observed counts, direct attribution, and correlation while preserving the 14-day traffic data.</td><td>Dated metrics, referrers, channel-state table, and attribution-confidence note.</td><td>Jimmy or an approved monitor.</td><td>T0 before submission; W1–W4 after first live acceptance.</td><td>Report missing windows honestly; do not invent attribution or expand without evidence.</td></tr>
       </tbody>
     </table>
   </section>
@@ -441,7 +456,7 @@
       <li><code class="status">[x]</code> <code>bash .scripts/verify-isolated-install.sh</code> — complete local candidate bundle passed through Skills CLI 1.5.21.</li>
       <li><code class="status">[x]</code> Live stdout smoke plus temporary output-directory smoke — user outcome passed.</li>
       <li><code class="status">[x]</code> GitHub CI and tag/release ancestry — public artifact agreement passed at merge <code>57ae480</code> and tag <code>v1.1.0</code>.</li>
-      <li><code class="status">[x]</code> Mermaid parse and render checks plus the 273-word PlanF3 Approval View validation passed.</li>
+      <li><code class="status">[x]</code> Mermaid parse and render checks plus the 254-word PlanF3 Approval View validation passed after the distribution execution amendment.</li>
     </ul>
   </section>
 
@@ -455,7 +470,8 @@
         <tr><td>Automated tests and isolated install proof</td><td>Delivered publicly</td><td>Fourteen tests pass on GitHub-hosted Python 3.8 and 3.13; a public-tag Skills CLI 1.5.21 install copied every required file.</td></tr>
         <tr><td>Obsidian and knowledge-base positioning</td><td>Delivered publicly</td><td>Released frontmatter, README, Codex metadata, GitHub Release, and claimed CodeGuilds listing use the focused archival-note promise.</td></tr>
         <tr><td>Move from <code>master</code> to <code>main</code></td><td>Delivered safely</td><td><code>main</code> is canonical; the automatically fast-forwarded <code>master</code> compatibility branch preserves raw legacy links without diverging.</td></tr>
-        <tr><td>CodeGuilds verification and submissions</td><td>Partially delivered</td><td>Listing, banner, tagline, README, version, and correct install command are live. CodeGuilds' own multi-file installer remains upstream-blocked in issues #1 and #2; badge and directory submissions are not delivered.</td></tr>
+        <tr><td>CodeGuilds verification</td><td>Partially delivered</td><td>Listing, banner, tagline, README, version, and correct Skills CLI command are live. CodeGuilds' own multi-file installer remains upstream-blocked in issues #1 and #2. Its one CLI record is the isolated verification rather than verified external adoption; its badge remains withheld.</td></tr>
+        <tr><td>Selective library distribution</td><td>Wave 1 submitted</td><td><a href="https://github.com/VoltAgent/awesome-agent-skills/pull/869">VoltAgent pull request #869</a> is open. Travis remains human-authored only. Awesome Claude Code is held on truthful Claude-specific fit. Broken-provenance and copy-based registries were inspected and deliberately not submitted.</td></tr>
         <tr><td>Four-week adoption record</td><td>Not started</td><td>Begins only after the first approved directory acceptance.</td></tr>
       </tbody>
     </table>
@@ -470,6 +486,7 @@
       <li id="questionable-4"><details><summary>Questionable 4: Should v1.1 add speaker identification, translation, cover images, or caching to compete with the 18.3k-install leader?</summary><p><strong>Recommendation:</strong> no. Those features would blur the release and make review harder. Compete through a smaller, dependable, single-file archival-note experience. Reconsider advanced features only after observing user requests after v1.1.</p></details></li>
       <li id="questionable-5"><details><summary>Questionable 5: Should CodeGuilds receive a badge immediately because the listing is claimed?</summary><p><strong>Recommendation:</strong> no. Keep the claimed page, fix its metadata, and add the badge only after its published installer successfully copies and runs the full skill in isolation.</p></details></li>
       <li id="questionable-6"><details><summary>Questionable 6: Should the skill be copied into large community repositories?</summary><p><strong>Recommendation:</strong> prefer link-based catalogs. A copied skill becomes a second source that can miss fixes and dependency updates. Consider vendoring only when a directory proves meaningful reach and has an explicit upstream synchronization model.</p></details></li>
+      <li id="questionable-7"><details open><summary>Questionable 7: Should the skill be recommended to Awesome Claude Code now?</summary><p><strong>Recommendation:</strong> hold. Recommendations are open, but the human web form requires Jimmy to attest that the resource is specific to Claude Code. The released skill is intentionally cross-agent and does not currently prove unique Claude Code functionality. Reach does not justify a doubtful attestation.</p></details></li>
     </ol>
   </section>
 
@@ -477,12 +494,14 @@
     <h2>Notes</h2>
     <ul>
       <li>VoltAgent's prior Strategic Partner rejection was specifically about missing real community usage; YouTube Fetcher's present evidence addresses that concern but does not guarantee acceptance.</li>
-      <li>Travis requires a human-authored submission. Codex must not provide final submission prose for Jimmy to paste verbatim.</li>
-      <li>hesreallyhim currently says recommendations are paused while the list catches up. Do not open a new issue until the policy changes.</li>
-      <li>Composio has high headline reach but slow observed review throughput and a copy-based model; it is intentionally not in the first wave.</li>
-      <li>Current local work remains on <code>codex/youtube-fetcher-v1-1</code>; only <code>.claude/</code> and <code>.serena/</code> are untracked. They are protected and were not included in v1.1.</li>
+      <li>VoltAgent showed 65 open pull requests immediately after YouTube Fetcher became <a href="https://github.com/VoltAgent/awesome-agent-skills/pull/869">pull request #869</a>. Its link-only, cross-agent policy and mature-usage requirement made it the strongest first fit.</li>
+      <li>Travis showed 646 open pull requests and 19 open <code>youtube</code> search results, requires a human-authored submission, and already has several overlapping transcript proposals. Codex must not provide final submission prose for Jimmy to paste verbatim.</li>
+      <li>Awesome Claude Code currently has 51,589 stars and 788 open issues. Recommendations are open through a human web form, correcting the earlier paused-policy assumption, but the form requires an honest Claude Code-specific attestation.</li>
+      <li>AwesomeSkills.dev accepts a GitHub URL and publishes it instantly without moderation. SkillsDir's advertised issue-template endpoint returned 404, while SkillsMD's form worked but its claimed public source repository remained unavailable; none belongs ahead of a curated Wave 1 result.</li>
+      <li>Composio has 71,687 stars and a copy-based contribution model that asks for a skill folder inside its repository; it is intentionally deferred to avoid update and security drift.</li>
+      <li>Current local work is on <code>main</code>; only <code>.claude/</code> and <code>.serena/</code> are untracked. They remain protected and outside this plan update.</li>
       <li>GitHub now uses canonical <code>main</code>, while the passing legacy-sync workflow keeps <code>master</code> identical for CodeGuilds and historical raw links.</li>
-      <li>CodeGuilds v1.1.0 currently supports discovery only for this multi-file skill. Its page now presents the verified <code>npx skills</code> route, while its own installer remains unadvertised because the isolated bundle inventory failed.</li>
+      <li>CodeGuilds v1.1.0 currently supports discovery only for this multi-file skill. Its page shows zero web downloads and one CLI record attributable to the 2026-08-03 isolated test, so there is no verified external CodeGuilds adoption. Its own installer remains unadvertised because the isolated bundle inventory failed.</li>
     </ul>
   </section>
 
@@ -493,6 +512,8 @@
     <p><strong>2026-08-03 — local release candidate:</strong> Phases 1–4 completed in feature commit <code>f3a5028</code>. Deterministic tests, Python 3.8/3.13 compatibility, skill validation, formatting and shell checks, isolated installation, two live smokes, YAML parsing, and duplicate preservation passed. One pre-existing filename-glob defect was discovered by the new tests and repaired. No remote action occurred.</p>
     <p><strong>2026-08-03 — v1.1 publication:</strong> Jimmy approved the remote gate and later authorized the necessary CodeGuilds correction. GitHub's default moved to <code>main</code>; a synchronized <code>master</code> compatibility branch preserves the mixed raw URLs discovered during preflight. Pull request #2 merged at <code>57ae480</code>, post-merge CI and branch synchronization passed, and annotated tag plus GitHub Release <code>v1.1.0</code> passed public-tag installation and live use proof.</p>
     <p><strong>2026-08-03 — CodeGuilds truth:</strong> The claimed page now shows the released tagline, README, correct Skills CLI command, banner, and version 1.1.0. An isolated CodeGuilds install proved its current single-file skill model cannot install the executable bundle and ignores project scope. The badge is withheld; upstream issues <a href="https://github.com/xdevsapps/codeguilds-cli/issues/1">#1</a> and <a href="https://github.com/xdevsapps/codeguilds-cli/issues/2">#2</a> contain the exact reproducible defects.</p>
+    <p><strong>2026-08-03 — end-to-end distribution plan:</strong> Live policy, queue, duplicate, provenance, and usage research confirms that no additional library submission has occurred. VoltAgent is the recommended first link-based PR; Travis remains Jimmy-authored only; Awesome Claude Code is held until its required Claude-specific attestation is truthful; instant-live, unavailable-source, and copy-based registries are deferred. Phase 8 now starts with T0 and requires four weekly snapshots before expansion.</p>
+    <p><strong>2026-08-04 — browser-led distribution execution:</strong> Jimmy authorized end-to-end execution. Codex used the signed-in in-app browser to re-read policies, search duplicates and queues, synchronize Jimmy's VoltAgent fork, and submit the single compliant link-only entry as <a href="https://github.com/VoltAgent/awesome-agent-skills/pull/869">pull request #869</a>. Travis and Awesome Claude Code were not submitted because their live forms require human authorship and, for Awesome Claude Code, a currently untrue Claude-specific attestation. AwesomeSkills remains gated on Wave 1 evidence; SkillsDir is blocked by a 404 submission endpoint; SkillsMD is held on source provenance; Composio is deferred because it copies skill code. Near-T0 is 191 stars, 15 forks, and 118 skills.sh installs.</p>
   </section>
 </main>
 </body>
