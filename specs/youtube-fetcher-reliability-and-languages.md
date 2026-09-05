@@ -12,16 +12,16 @@ execution_continuity: continue-here
 
 - **Intent:** Improve the public skill around the failures that affect everyday capture and international users.
 - **Outcome:** Existing files stay safe, language choices are truthful, network failures terminate with useful guidance, and exported notes remain portable and useful.
-- **Included:** Runtime, skill instructions, README, behavioral tests, and existing CI/install verification. Add automatic source-language selection, strict language selection, explicit YouTube translation with provenance, linked timestamps, plain text and WebVTT export.
-- **Not included:** Audio downloads/transcription, playlists, paid services, browser cookie access, automatic dependency installation, or unrelated worktree changes.
+- **Included:** Runtime, skill instructions, README, behavioral tests, CI/install verification, approved public release, and cleanup of redundant repository history. Add automatic source-language selection, strict language selection, explicit YouTube translation with provenance, linked timestamps, plain text and WebVTT export.
+- **Not included:** Audio downloads/transcription, playlists, paid services, browser cookie access, automatic dependency installation, or changes to unrelated repository contents.
 - **Owner:** This Codex task owns implementation and verification.
 - **Authority:** Jimmy authorized implementation, then explicitly authorized public release, documentation synchronization, and necessary Git cleanup on 2026-09-05. Publication must follow passing checks and verification.
 - **Protected actions:** Unrelated repository or service changes, discarding unique work, new external promotion, and changing the user's existing Python environment remain outside this approval. Retain the legacy `master` mirror and prior release tag.
-- **Finished means:** Regression tests prove file preservation, language selection/translation, network timeouts, metadata isolation, Unicode output, and CLI behavior. The copied skill runs from a path containing spaces in an isolated environment. Attempt a bounded live fetch and record its actual outcome; upstream blocking is a disclosed limit, never a success claim.
+- **Finished means:** Regression tests prove file preservation, language selection/translation, timeouts, metadata isolation, Unicode output, and CLI behavior. Public tag, release, CI, isolated installation, and live capture agree. The canonical checkout is clean, and every retired branch or worktree has verified history/evidence custody.
 
 ## Plan
 
-The starting checkout is `main` at `aba343a`, one documentation commit ahead of the verified public `2bf60a1`. Preserve the untracked `.claude/` worktree. All 14 baseline tests pass; they mainly exercise helpers, leaving the CLI and filesystem behavior untested. Keep the portable single-script package and its current dependency family.
+The starting checkout was `main` at `aba343a`, one documentation commit ahead of public `2bf60a1`. Implementation preserved the old `.claude/` worktree; the later approved cleanup is recorded below. The 14 baseline tests mainly exercised helpers, leaving CLI and filesystem behavior untested. The portable single-script package and dependency family are retained.
 
 1. Unify output handling across Markdown, JSON, SRT, plain text, and WebVTT. Check known destinations before network/dependency work; prefer atomic publication and use exclusive creation on filesystems without hard links. The fallback can expose a new file during writing and cleans partial output on handled errors. Require `--force` for replacement, preserve existing permission modes, and refresh an existing default note in place. Explicit file paths take precedence over other captures of the same video. Preserve exit codes 0–3.
 2. Select real caption tracks by ordered language preference and regional variants. Preserve English as the default and fallback; add `auto` and strict selection. Translate only on explicit request, retaining source language and original caption type in Markdown provenance. Preserve raw JSON's existing array schema.
@@ -42,4 +42,34 @@ Verified on 2026-09-05:
 - Independent read-only review identified missing language reporting in raw exports, hard-link filesystem compatibility, and permission preservation. All three were corrected and have regression tests. That review's sandbox could not complete its filesystem tests; this task ran the full suite in the isolated environments above.
 - Skill and PlanF3 validation, Python compilation, Ruff checks, shell syntax, and Git whitespace checks pass.
 
-Publication of v1.2.0 is authorized and in progress through the repository's pull-request route. The Linux/Windows/macOS CI matrix must pass before merge and tagging. Caption access and translation remain dependent on YouTube, and filesystems without hard links have the documented exclusive-write fallback rather than atomic new-file publication.
+## Public release and final custody
+
+[v1.2.0](https://github.com/JimmySadek/youtube-fetcher-to-markdown/releases/tag/v1.2.0)
+was published on 2026-09-05 at `7401ded6c6195f38db962c95a3cc0a92a96bf42a`,
+through [PR #4](https://github.com/JimmySadek/youtube-fetcher-to-markdown/pull/4).
+All Linux, Windows, and macOS jobs passed in
+[PR CI](https://github.com/JimmySadek/youtube-fetcher-to-markdown/actions/runs/33985647882)
+and [post-merge CI](https://github.com/JimmySadek/youtube-fetcher-to-markdown/actions/runs/33985725827).
+The [legacy mirror check](https://github.com/JimmySadek/youtube-fetcher-to-markdown/actions/runs/33985725846)
+also passed. The release is public and is neither a draft nor a prerelease.
+
+A fresh clone of the public tag passed all 61 tests and the Skills CLI 1.5.23
+installation probe. Its live JSON capture returned 1,167 snippets (123,191 bytes),
+including the end of the 36-minute video. Anonymous raw-file downloads matched
+the released runtime, skill instructions, and README byte for byte.
+
+The approved cleanup retains one active `main` worktree, the `main`/`master`
+hosted branches, and both release tags. Redundant release branches and the old
+worktree were retired. Historical tip `0a8d37a` is patch-equivalent and has the
+same tree as canonical `2110920`; it is also preserved by a local archive ref and
+a verified private Git bundle. The separate `awesome-claude-code` checkout was
+moved outside skill discovery with all 780 files, byte counts, hashes, Git HEAD,
+and clean status verified unchanged. Its obsolete duplicate Codex shortcut was
+retired; the canonical Codex and Claude shortcuts still resolve to this repository.
+Generated caches were moved recoverably; local Serena configuration was retained.
+Private manifests record the exact custody paths and before/after inventory.
+
+Caption access and translation still depend on YouTube. Filesystems without
+hard links use the documented exclusive-write fallback. Historical directory
+promotion and attribution work remains separate from the completed engineering
+release; the v1.1 record now identifies VoltAgent's accepted submission.
