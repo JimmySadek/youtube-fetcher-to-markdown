@@ -12,6 +12,9 @@ in one Obsidian-ready file—without an API key.
 npx skills add JimmySadek/youtube-fetcher-to-markdown
 ```
 
+Read the [v1.2.0 release notes](https://github.com/JimmySadek/youtube-fetcher-to-markdown/releases/tag/v1.2.0)
+for the new language options, exports, and safer overwrite behavior.
+
 ## What you get
 
 Paste a YouTube link and receive a file such as:
