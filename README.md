@@ -333,6 +333,26 @@ uses a temporary project; it does not replace your installed skill.
 
 </details>
 
+### Maintaining and releasing
+
+`main` is the canonical development branch. The automated `master` mirror is
+retained for older raw-file links; do not delete it or develop on it. See
+[GitHub releases](https://github.com/JimmySadek/youtube-fetcher-to-markdown/releases)
+for tagged versions and upgrade notes.
+
+For a release, run the local checks above and the isolated install probe, open a
+pull request, and wait for every Linux, Windows, and macOS CI job. Merge only the
+checked revision, verify post-merge CI and the legacy mirror, then tag that exact
+commit and publish its release notes. Verify installation from a fresh clone of
+the public tag. Live caption tests are useful release evidence but are kept out
+of CI because YouTube may block hosted runners.
+
+The [reliability and language record](specs/youtube-fetcher-reliability-and-languages.md)
+contains the v1.2 verification evidence. The older
+[v1.1 distribution record](specs/youtube-fetcher-v1-1-release-and-distribution.html)
+preserves historical channel decisions; dated adoption numbers are snapshots.
+Directory promotion and external listings are separate from engineering releases.
+
 ## License
 
 MIT

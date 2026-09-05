@@ -15,8 +15,8 @@ execution_continuity: continue-here
 - **Included:** Runtime, skill instructions, README, behavioral tests, and existing CI/install verification. Add automatic source-language selection, strict language selection, explicit YouTube translation with provenance, linked timestamps, plain text and WebVTT export.
 - **Not included:** Audio downloads/transcription, playlists, paid services, browser cookie access, automatic dependency installation, or unrelated worktree changes.
 - **Owner:** This Codex task owns implementation and verification.
-- **Authority:** Jimmy explicitly requested checking and substantially improving the skill in this turn. Implementation and one validated local commit are authorized.
-- **Protected actions:** Push, tags, releases, publication, changing branch strategy, deleting user work, and installing packages into the user's existing Python environment require separate authorization.
+- **Authority:** Jimmy authorized implementation, then explicitly authorized public release, documentation synchronization, and necessary Git cleanup on 2026-09-05. Publication must follow passing checks and verification.
+- **Protected actions:** Unrelated repository or service changes, discarding unique work, new external promotion, and changing the user's existing Python environment remain outside this approval. Retain the legacy `master` mirror and prior release tag.
 - **Finished means:** Regression tests prove file preservation, language selection/translation, network timeouts, metadata isolation, Unicode output, and CLI behavior. The copied skill runs from a path containing spaces in an isolated environment. Attempt a bounded live fetch and record its actual outcome; upstream blocking is a disclosed limit, never a success claim.
 
 ## Plan
@@ -42,4 +42,4 @@ Verified on 2026-09-05:
 - Independent read-only review identified missing language reporting in raw exports, hard-link filesystem compatibility, and permission preservation. All three were corrected and have regression tests. That review's sandbox could not complete its filesystem tests; this task ran the full suite in the isolated environments above.
 - Skill and PlanF3 validation, Python compilation, Ruff checks, shell syntax, and Git whitespace checks pass.
 
-The implementation is ready for publication review. No push, tag, or release was performed. The added Linux/Windows/macOS CI matrix has not yet run remotely. Caption access and translation remain dependent on YouTube, and filesystems without hard links have the documented exclusive-write fallback rather than atomic new-file publication.
+Publication of v1.2.0 is authorized and in progress through the repository's pull-request route. The Linux/Windows/macOS CI matrix must pass before merge and tagging. Caption access and translation remain dependent on YouTube, and filesystems without hard links have the documented exclusive-write fallback rather than atomic new-file publication.
