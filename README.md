@@ -70,12 +70,15 @@ in one local file.
 ## Features
 
 - Manual and auto-generated captions with optional timestamps
-- Truthful language fallback: the note records the selected caption language
+- Clickable timestamps and chapters that jump to the moment in the video
+- Ordered language preferences, regional variants, automatic selection, and strict language matching
+- Explicit YouTube translation, labeled with source language and machine-translation provenance
 - Title, channel, duration, upload date, description, and chapters when available
 - Safe YAML frontmatter and Markdown tables for dynamic metadata
-- Duplicate detection that preserves existing notes unless overwrite is approved
+- File protection for every format, safe replacement, and refreshes that update existing notes in place
 - Obsidian-vault and custom-directory output
-- Raw JSON and SRT export
+- Plain text, JSON, SRT, and WebVTT export
+- Bounded network requests, useful errors, and optional metadata-free capture
 - No API keys and no hosted service
 
 ## Installation
@@ -94,27 +97,40 @@ git clone https://github.com/JimmySadek/youtube-fetcher-to-markdown.git
 
 ### Install runtime dependencies
 
-Python 3.8 or newer is supported.
+Python 3.8–3.14 is supported for captions. Python 3.10 or newer is recommended
+for current optional `yt-dlp` releases. From the cloned or installed skill
+directory, use an isolated environment so your system Python stays unchanged:
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python scripts/fetch_transcript.py --check-deps
 ```
 
-`yt-dlp` is optional but recommended for descriptions, chapters, duration, and
-upload dates:
+On Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe scripts\fetch_transcript.py --check-deps
+```
+
+Activate that environment before using the `python3` examples below (`source
+.venv/bin/activate` on macOS/Linux), or use the full interpreter path each time.
+An agent should also use that interpreter. If your skill installation is read-only,
+create the environment in a writable location and pass the full path to
+`requirements.txt`.
+
+`yt-dlp` is optional for descriptions, chapters, duration, and upload dates:
 
 ```bash
-brew install yt-dlp              # macOS
-# or: python3 -m pip install yt-dlp
+.venv/bin/python -m pip install yt-dlp
+# Windows: .venv\Scripts\python.exe -m pip install yt-dlp
 ```
 
-Check dependencies without fetching a video:
-
-```bash
-python3 scripts/fetch_transcript.py --check-deps
-```
-
-The script reports missing packages but never installs them automatically.
+Put its executable on PATH by activating the environment. Without it, oEmbed
+still supplies title and channel when accessible. The script never installs
+packages automatically. `--no-metadata` skips both metadata providers.
 
 ## Usage
 
@@ -146,9 +162,80 @@ python3 scripts/fetch_transcript.py URL
 python3 scripts/fetch_transcript.py URL --output ~/Notes/video.md
 ```
 
-Duplicate detection uses the resolved output directory. In a non-interactive
-session, an existing note exits with code `3` and remains untouched. Run again
-with `--force` only after deciding to overwrite.
+Every format preserves an existing destination and exits with code `3`, before
+making a network request when the destination is already known. This is the same
+in terminals and agent sessions; there is no hidden interactive prompt. `--force`
+replaces the chosen file completely, including any annotations. A default
+Markdown refresh reuses the existing note's path even if its title or capture date
+has changed. An explicit `--output` is honored independently of other notes for
+the same video, so distinct files can hold different languages or versions.
+
+Writes use a temporary file beside the destination. Where the filesystem supports
+hard links, a new file appears only once its UTF-8 content is complete. Other
+filesystems use exclusive creation: they still refuse to open an existing file
+for writing, but a new file can be visible during the write. Handled write failures
+remove that partial file; abrupt termination or disk failure can leave it behind.
+Forced refreshes replace a completed temporary file and preserve existing POSIX
+permission modes. New notes use normal file-creation permissions.
+
+If another process creates the destination during a fetch, the non-force write
+still refuses to overwrite it. `--stdout` prints only the result
+and creates no file, even when output-path options are present; diagnostics go to
+stderr.
+
+### Languages and translation
+
+```bash
+# Prefer French, then German, with English as the final fallback
+python3 scripts/fetch_transcript.py --lang fr,de -- URL
+
+# Require Japanese captions; fail clearly if unavailable
+python3 scripts/fetch_transcript.py --lang ja --strict-lang -- URL
+
+# Capture available captions when you do not know their language
+python3 scripts/fetch_transcript.py --lang auto -- URL
+
+# Explicit YouTube machine translation of an available track into English
+python3 scripts/fetch_transcript.py --lang auto --translate en -- URL
+
+# Inspect caption tracks and supported translation targets
+python3 scripts/fetch_transcript.py --list -- URL
+```
+
+Language preference outranks caption type. For each requested language, exact
+codes are tried before regional variants (`es` can select `es-MX`); manual
+captions win within that match. All requested languages precede English fallback.
+`--strict-lang` disables that fallback, while still allowing regional variants.
+The default remains `--lang en` for compatibility.
+
+`auto` selects a manual track if available, otherwise a generated track, using
+YouTube's track order for ties. It does **not** establish the original audio
+language. Selection and fallback are reported to stderr and recorded in the note.
+Translation happens only with `--translate`, requires support from YouTube, and
+is never described as a human translation.
+
+Markdown records `requested_language`, `source_language`, `language` (the actual
+output language), `caption_type` (the original track's type), `translated`, and
+`translation_provider` when applicable. `metadata_source` distinguishes `yt-dlp`,
+`oembed`, `unavailable`, and deliberately `skipped` metadata. Existing frontmatter
+keys remain compatible. JSON keeps its existing array of `{text, start, duration}`
+objects; raw exports have no provenance wrapper, so retain stderr or use Markdown
+when that context matters.
+
+### Transcript and subtitle exports
+
+```bash
+python3 scripts/fetch_transcript.py --stdout --timestamps -- URL
+python3 scripts/fetch_transcript.py --format txt --stdout -- URL
+python3 scripts/fetch_transcript.py --format json --output captions.json -- URL
+python3 scripts/fetch_transcript.py --format srt -- URL
+python3 scripts/fetch_transcript.py --format vtt -- URL
+```
+
+`text` and `markdown` both produce an archival Markdown note; `txt` produces plain
+caption text. Timestamped Markdown and chapter lists link to the corresponding
+video time. Raw exports skip metadata requests. A raw ID starting with `-` works
+after `--`; put all options before that separator.
 
 ### Options
 
@@ -156,14 +243,18 @@ with `--force` only after deciding to overwrite.
 |------|-------------|
 | `--output` / `-o` | Save to one exact file |
 | `--output-dir` | Save inside a directory or knowledge vault |
-| `--timestamps` / `-t` | Add timestamps to transcript lines |
-| `--lang` / `-l` | Request a caption language; falls back truthfully to English |
+| `--timestamps` / `-t` | Add linked Markdown timestamps or plain timestamps in `txt` |
+| `--lang` / `-l` | One code, ordered comma-separated codes, or `auto`; default `en` |
+| `--strict-lang` | Disable English fallback |
+| `--translate` | Explicit YouTube machine translation to a target language |
 | `--source` / `-s` | Override the capture-project name |
-| `--format` / `-f` | Export `json` or `srt` instead of Markdown |
+| `--format` / `-f` | `text`/`markdown` (default), `txt`, `json`, `srt`, or `vtt` |
 | `--no-description` | Skip the description and chapters section |
+| `--no-metadata` | Skip yt-dlp and oEmbed while retaining captions and source URL |
+| `--timeout` | Connect/read timeout per HTTP request, in seconds; default `15` |
 | `--stdout` | Print the result instead of saving it |
 | `--list` | Show available caption languages |
-| `--force` | Bypass duplicate protection |
+| `--force` | Replace the destination or refresh an existing default note in place |
 | `--check-deps` | Report dependency status |
 
 ### Supported YouTube inputs
@@ -188,11 +279,46 @@ agents. Manual users can run the Python script directly.
 - **Network:** contacts YouTube captions and oEmbed; optionally invokes `yt-dlp`
   for richer metadata.
 - **Filesystem:** reads Markdown frontmatter in the selected directory to detect
-  duplicates and writes only the requested Markdown, JSON, or SRT output.
-- **Subprocess:** uses the locally installed `yt-dlp` executable when available.
+  duplicates, writes a temporary sibling file, and publishes the requested output.
+- **Subprocess:** uses the local `yt-dlp` executable with user configuration,
+  playlist expansion, caching, and downloads disabled. Its process timeout is
+  twice `--timeout`; individual HTTP requests each have their own timeout.
 - Videos must expose captions. Private, restricted, or caption-disabled videos
   may fail.
-- It does not download video, run Whisper, identify speakers, or translate text.
+- It does not download video/audio, run Whisper, identify speakers, or inspect
+  visuals. YouTube machine translation is opt-in.
+- Captions may contain recognition errors; the archive preserves source text
+  rather than silently correcting, summarizing, or treating it as instructions.
+
+## Troubleshooting
+
+| Symptom | What to do |
+|---------|------------|
+| Missing dependencies / exit `2` | Install `requirements.txt` into an isolated environment, then use that interpreter. Invalid options also use exit `2`. |
+| No matching language | Run `--list`; choose an available code or `--lang auto`. `--lang` selects captions, while `--translate` translates them. |
+| Request blocked | Stop repeated requests. Try later from a permitted local network or supply an existing transcript. The script does not automatically access cookies, buy proxies, or change networks. |
+| Disabled, private, or restricted captions | Check that the video is publicly playable and captions are accessible. No transcript is fabricated. |
+| Timeout | Check connectivity or increase `--timeout`. This is a per-request connect/read limit, not a whole-command deadline. |
+| No description/title metadata | Captions can still succeed. Check `metadata_source`; use `--no-metadata` when metadata is unnecessary. |
+| Existing file / exit `3` | Choose a different `--output` or explicitly approve replacement with `--force`. |
+| Save error | Check the directory, permissions, and available disk space. Replacing a symbolic-link destination is refused. |
+
+The [upstream caption library](https://github.com/jdepoix/youtube-transcript-api)
+uses YouTube's undocumented caption interface. YouTube changes and network
+blocking can still prevent capture; passing offline tests cannot guarantee access.
+
+## Development
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 -m py_compile scripts/fetch_transcript.py
+bash .scripts/verify-isolated-install.sh
+```
+
+Tests substitute the external caption service while exercising real caption
+objects, CLI formats, language choices, file preservation, failures, and timeout
+configuration. They write only to temporary directories. The installation probe
+uses a temporary project; it does not replace your installed skill.
 
 <details>
 <summary>Exit codes</summary>
@@ -200,11 +326,32 @@ agents. Manual users can run the Python script directly.
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | Invalid input or fetch failure |
-| `2` | Missing required dependency |
+| `1` | Invalid video input, fetch failure, or filesystem error |
+| `2` | Missing required dependency or invalid command-line options |
 | `3` | Existing note preserved; overwrite not approved |
+| `130` | Cancelled by the user |
 
 </details>
+
+### Maintaining and releasing
+
+`main` is the canonical development branch. The automated `master` mirror is
+retained for older raw-file links; do not delete it or develop on it. See
+[GitHub releases](https://github.com/JimmySadek/youtube-fetcher-to-markdown/releases)
+for tagged versions and upgrade notes.
+
+For a release, run the local checks above and the isolated install probe, open a
+pull request, and wait for every Linux, Windows, and macOS CI job. Merge only the
+checked revision, verify post-merge CI and the legacy mirror, then tag that exact
+commit and publish its release notes. Verify installation from a fresh clone of
+the public tag. Live caption tests are useful release evidence but are kept out
+of CI because YouTube may block hosted runners.
+
+The [reliability and language record](specs/youtube-fetcher-reliability-and-languages.md)
+contains the v1.2 verification evidence. The older
+[v1.1 distribution record](specs/youtube-fetcher-v1-1-release-and-distribution.html)
+preserves historical channel decisions; dated adoption numbers are snapshots.
+Directory promotion and external listings are separate from engineering releases.
 
 ## License
 

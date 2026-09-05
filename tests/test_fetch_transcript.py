@@ -27,14 +27,10 @@ class StubTranscript:
         self.is_generated = is_generated
 
 
-class StubTranscriptList:
+class StubTranscriptList(list):
     def __init__(self, selected):
+        super().__init__([selected])
         self.selected = selected
-        self.requested = None
-
-    def find_transcript(self, languages):
-        self.requested = languages
-        return self.selected
 
 
 class ExtractVideoIdTests(unittest.TestCase):
@@ -123,7 +119,6 @@ class TranscriptSelectionTests(unittest.TestCase):
             )
 
         self.assertIs(selected, transcript_list.selected)
-        self.assertEqual(transcript_list.requested, ["es", "en"])
         self.assertEqual(language, "en")
         self.assertEqual(caption_type, "auto-generated")
         self.assertIn("requested captions 'es' were unavailable", stderr.getvalue())
@@ -140,7 +135,8 @@ class TranscriptSelectionTests(unittest.TestCase):
 
         self.assertEqual(language, "es-MX")
         self.assertEqual(caption_type, "manual")
-        self.assertEqual(stderr.getvalue(), "")
+        self.assertNotIn("Warning:", stderr.getvalue())
+        self.assertIn("Selected captions: es-MX (manual)", stderr.getvalue())
 
     def test_specific_english_request_can_fall_back_to_generic_english(self):
         transcript_list = StubTranscriptList(
@@ -150,7 +146,6 @@ class TranscriptSelectionTests(unittest.TestCase):
         with contextlib.redirect_stderr(stderr):
             _, language, _ = youtube_fetcher.select_transcript(transcript_list, "en-US")
 
-        self.assertEqual(transcript_list.requested, ["en-US", "en"])
         self.assertEqual(language, "en")
         self.assertIn("using 'en' instead", stderr.getvalue())
 
